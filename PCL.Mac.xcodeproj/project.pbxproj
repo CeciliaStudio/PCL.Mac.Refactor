@@ -86,11 +86,12 @@
 				};
 			};
 			buildConfigurationList = ECC26BBE2EBEDD67002B7E3E /* Build configuration list for PBXProject "PCL.Mac" */;
-			developmentRegion = en;
+			developmentRegion = "zh-Hans";
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = ECC26BBA2EBEDD67002B7E3E;
 			minimizedProjectReferenceProxies = 1;
@@ -254,11 +255,16 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PCL.Mac/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PCL.Mac;
+				INFOPLIST_KEY_GCSupportsGameMode = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.ceciliastudio.PCL-Mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -279,11 +285,16 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PCL.Mac/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PCL.Mac;
+				INFOPLIST_KEY_GCSupportsGameMode = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.ceciliastudio.PCL-Mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";

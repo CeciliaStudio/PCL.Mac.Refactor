@@ -10,9 +10,14 @@ import AppKit
 import Core
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private func registerFont() {
+        let fontURL: URL = AppURLs.resourcesURL.appending(path: "PCL.ttf")
+        CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, nil)
+    }
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
         LogManager.shared.enableLogging(logsURL: AppURLs.logsDirectoryURL)
-        log("Test")
+        registerFont()
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

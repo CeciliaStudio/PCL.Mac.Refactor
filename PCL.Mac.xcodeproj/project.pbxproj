@@ -40,6 +40,17 @@
 		ECC26BC32EBEDD67002B7E3E /* PCL.Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PCL.Mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		EC996CF72EBEEF100094E524 /* Exceptions for "PCL.Mac" folder in "PCL.Mac" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+				Info.plist,
+			);
+			target = ECC26BC22EBEDD67002B7E3E /* PCL.Mac */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		EC9969932EBEE6A20094E524 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -53,6 +64,9 @@
 		};
 		ECC26BC52EBEDD67002B7E3E /* PCL.Mac */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				EC996CF72EBEEF100094E524 /* Exceptions for "PCL.Mac" folder in "PCL.Mac" target */,
+			);
 			path = PCL.Mac;
 			sourceTree = "<group>";
 		};

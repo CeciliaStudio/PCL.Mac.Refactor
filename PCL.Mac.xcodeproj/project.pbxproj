@@ -12,6 +12,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		EC71A3312EC034AA006E496F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECC26BBB2EBEDD67002B7E3E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ECC26BC22EBEDD67002B7E3E;
+			remoteInfo = PCL.Mac;
+		};
 		EC996B422EBEE80F0094E524 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = ECC26BBB2EBEDD67002B7E3E /* Project object */;
@@ -36,6 +43,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EC71A32D2EC034AA006E496F /* PCL.Mac.Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PCL.Mac.Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC996B3C2EBEE80F0094E524 /* Core.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Core.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECC26BC32EBEDD67002B7E3E /* PCL.Mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PCL.Mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -52,6 +60,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		EC71A32E2EC034AA006E496F /* PCL.Mac.Tests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PCL.Mac.Tests;
+			sourceTree = "<group>";
+		};
 		EC9969932EBEE6A20094E524 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Resources;
@@ -73,6 +86,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		EC71A32A2EC034AA006E496F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EC996B392EBEE80F0094E524 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -97,6 +117,7 @@
 				EC9969932EBEE6A20094E524 /* Resources */,
 				ECC26BC52EBEDD67002B7E3E /* PCL.Mac */,
 				EC996B3D2EBEE80F0094E524 /* PCL.Mac.Core */,
+				EC71A32E2EC034AA006E496F /* PCL.Mac.Tests */,
 				ECC26BC42EBEDD67002B7E3E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -106,6 +127,7 @@
 			children = (
 				ECC26BC32EBEDD67002B7E3E /* PCL.Mac.app */,
 				EC996B3C2EBEE80F0094E524 /* Core.framework */,
+				EC71A32D2EC034AA006E496F /* PCL.Mac.Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -123,6 +145,29 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		EC71A32C2EC034AA006E496F /* PCL.Mac.Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EC71A3332EC034AA006E496F /* Build configuration list for PBXNativeTarget "PCL.Mac.Tests" */;
+			buildPhases = (
+				EC71A3292EC034AA006E496F /* Sources */,
+				EC71A32A2EC034AA006E496F /* Frameworks */,
+				EC71A32B2EC034AA006E496F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EC71A3322EC034AA006E496F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				EC71A32E2EC034AA006E496F /* PCL.Mac.Tests */,
+			);
+			name = PCL.Mac.Tests;
+			packageProductDependencies = (
+			);
+			productName = PCL.Mac.Tests;
+			productReference = EC71A32D2EC034AA006E496F /* PCL.Mac.Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		EC996B3B2EBEE80F0094E524 /* PCL.Mac.Core */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = EC996B472EBEE80F0094E524 /* Build configuration list for PBXNativeTarget "PCL.Mac.Core" */;
@@ -181,6 +226,11 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					EC71A32C2EC034AA006E496F = {
+						CreatedOnToolsVersion = 16.4;
+						LastSwiftMigration = 1640;
+						TestTargetID = ECC26BC22EBEDD67002B7E3E;
+					};
 					EC996B3B2EBEE80F0094E524 = {
 						CreatedOnToolsVersion = 16.4;
 						LastSwiftMigration = 1640;
@@ -207,11 +257,19 @@
 			targets = (
 				ECC26BC22EBEDD67002B7E3E /* PCL.Mac */,
 				EC996B3B2EBEE80F0094E524 /* PCL.Mac.Core */,
+				EC71A32C2EC034AA006E496F /* PCL.Mac.Tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		EC71A32B2EC034AA006E496F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EC996B3A2EBEE80F0094E524 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -229,6 +287,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		EC71A3292EC034AA006E496F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EC996B382EBEE80F0094E524 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -246,6 +311,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		EC71A3322EC034AA006E496F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ECC26BC22EBEDD67002B7E3E /* PCL.Mac */;
+			targetProxy = EC71A3312EC034AA006E496F /* PBXContainerItemProxy */;
+		};
 		EC996B432EBEE80F0094E524 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = EC996B3B2EBEE80F0094E524 /* PCL.Mac.Core */;
@@ -254,6 +324,43 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		EC71A3342EC034AA006E496F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.ceciliastudio.PCL-Mac-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PCL.Mac.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PCL.Mac";
+			};
+			name = Debug;
+		};
+		EC71A3352EC034AA006E496F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.ceciliastudio.PCL-Mac-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PCL.Mac.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PCL.Mac";
+			};
+			name = Release;
+		};
 		EC996B482EBEE80F0094E524 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -275,6 +382,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -312,6 +420,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -508,6 +617,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		EC71A3332EC034AA006E496F /* Build configuration list for PBXNativeTarget "PCL.Mac.Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EC71A3342EC034AA006E496F /* Debug */,
+				EC71A3352EC034AA006E496F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		EC996B472EBEE80F0094E524 /* Build configuration list for PBXNativeTarget "PCL.Mac.Core" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

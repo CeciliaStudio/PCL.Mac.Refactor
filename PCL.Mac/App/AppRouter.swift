@@ -25,13 +25,22 @@ class AppRouter {
         switch getLast() {
         case .launch:
             LaunchView()
+        case .download:
+            DownloadView()
         default:
             EmptyView()
         }
     }
     
-    var sidebar: some Sidebar {
-        LaunchSidebar()
+    var sidebar: any Sidebar {
+        switch getLast() {
+        case .launch:
+            LaunchSidebar()
+        case .download:
+            DownloadSidebar()
+        default:
+            fatalError()
+        }
     }
     
     func getLast() -> AppRoute {

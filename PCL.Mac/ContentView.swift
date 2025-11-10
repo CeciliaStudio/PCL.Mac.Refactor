@@ -9,25 +9,27 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject private var dataManager: DataManager = .shared
+    @State private var sidebarWidth: CGFloat = AppRouter.shared.sidebar.width
     
     var body: some View {
         VStack(spacing: 0) {
             TitleBarView()
-                .frame(maxWidth: .infinity)
             HStack(spacing: 0) {
                 Rectangle()
-                    .frame(width: AppRouter.shared.sidebar.width)
-                    .background(.white)
-                    .overlay { AppRouter.shared.sidebar }
+                    .fill(.white)
+                    .frame(width: sidebarWidth)
+                    .overlay(AnyView(AppRouter.shared.sidebar.content))
+                    .onChange(of: AppRouter.shared.sidebar.width) { newValue in
+                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                            sidebarWidth = newValue
+                        }
+                    }
                 AppRouter.shared.content
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(.green)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.red)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .font(.pcl())
     }
 }
 

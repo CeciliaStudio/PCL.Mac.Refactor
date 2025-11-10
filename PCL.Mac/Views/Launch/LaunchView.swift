@@ -9,14 +9,6 @@ import SwiftUI
 
 struct LaunchView: View {
     var body: some View {
-        Spacer()
-    }
-}
-
-struct LaunchSidebar: Sidebar {
-    let width: CGFloat = 240
-    
-    var body: some View {
-        Text("边栏")
+        MyText("LaunchView")
     }
 }

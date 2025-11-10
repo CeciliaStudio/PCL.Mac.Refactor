@@ -9,8 +9,34 @@ import SwiftUI
 
 struct TitleBarView: View {
     var body: some View {
-        Rectangle()
-            .fill(.blue)
-            .frame(height: 48)
+        ZStack {
+            Rectangle()
+                .fill(.blue)
+            HStack {
+                PageButton(route: .launch)
+                PageButton(route: .download)
+            }
+        }
+        .frame(height: 48)
+    }
+}
+
+private struct PageButton: View {
+    private let route: AppRoute
+    
+    init(route: AppRoute) {
+        self.route = route
+    }
+    
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(.cyan)
+            MyText(String(describing: route))
+        }
+        .frame(width: 80, height: 30)
+        .onTapGesture {
+            AppRouter.shared.setRoot(route)
+        }
     }
 }

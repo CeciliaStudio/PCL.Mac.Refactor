@@ -7,7 +7,12 @@
 
 import SwiftUI
 
-protocol Sidebar: View {
+protocol Sidebar {
     init()
+    associatedtype Body : View
+    
     var width: CGFloat { get }
+    
+    @ViewBuilder
+    var content: Self.Body { get }
 }

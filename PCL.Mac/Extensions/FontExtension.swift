@@ -8,5 +8,7 @@
 import SwiftUI
 
 extension Font {
-    static let pcl: Font = .custom("PCL English", size: 14)
+    static func pcl(size: CGFloat = 14) -> Font {
+        .custom("PCL English", size: size)
+    }
 }

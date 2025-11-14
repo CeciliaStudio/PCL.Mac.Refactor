@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DownloadSidebar: Sidebar {
-    let width: CGFloat = 200
+    let width: CGFloat = 120
     
     var content: some View {
         MyText("DownloadSidebar")

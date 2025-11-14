@@ -28,18 +28,18 @@ class AppRouter {
         case .download:
             DownloadView()
         default:
-            EmptyView()
+            Spacer()
         }
     }
     
     var sidebar: any Sidebar {
-        switch getLast() {
+        switch getRoot() {
         case .launch:
             LaunchSidebar()
         case .download:
             DownloadSidebar()
         default:
-            fatalError()
+            EmptySidebar()
         }
     }
     

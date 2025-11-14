@@ -23,10 +23,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationWillFinishLaunching(_ notification: Notification) {
         LogManager.shared.enableLogging(logsURL: AppURLs.logsDirectoryURL)
+        log("App 正在启动")
         registerFont()
     }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        log("App 启动完成")
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

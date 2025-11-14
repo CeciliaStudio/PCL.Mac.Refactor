@@ -16,3 +16,11 @@ protocol Sidebar {
     @ViewBuilder
     var content: Self.Body { get }
 }
+
+struct EmptySidebar: Sidebar {
+    let width: CGFloat = 0
+    
+    var content: some View {
+        EmptyView()
+    }
+}

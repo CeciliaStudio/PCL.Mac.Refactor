@@ -20,7 +20,7 @@ struct ContentView: View {
                     .frame(width: sidebarWidth)
                     .overlay(AnyView(AppRouter.shared.sidebar.content))
                     .onChange(of: AppRouter.shared.sidebar.width) { newValue in
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                        withAnimation(.spring(response: 0.1, dampingFraction: 0.8)) {
                             sidebarWidth = newValue
                         }
                     }

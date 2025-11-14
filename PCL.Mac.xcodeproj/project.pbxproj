@@ -52,7 +52,6 @@
 		EC996CF72EBEEF100094E524 /* Exceptions for "PCL.Mac" folder in "PCL.Mac" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Assets.xcassets,
 				Info.plist,
 			);
 			target = ECC26BC22EBEDD67002B7E3E /* PCL.Mac */;

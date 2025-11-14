@@ -8,15 +8,29 @@
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject private var dataManager: DataManager = .shared
+    @ObservedObject private var router: AppRouter = .shared
+    @State private var sidebarWidth: CGFloat = AppRouter.shared.sidebar.width
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        VStack(spacing: 0) {
+            TitleBarView()
+            HStack(spacing: 0) {
+                Rectangle()
+                    .fill(.white)
+                    .frame(width: sidebarWidth)
+                    .overlay(AnyView(router.sidebar.content))
+                    .onChange(of: router.sidebar.width) { newValue in
+                        withAnimation(.spring(response: 0.1, dampingFraction: 0.8)) {
+                            sidebarWidth = newValue
+                        }
+                    }
+                router.content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(.green)
+            }
         }
-        .padding()
-        .font(.pcl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

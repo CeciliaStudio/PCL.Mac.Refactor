@@ -12,12 +12,21 @@ struct TitleBarView: View {
         ZStack {
             Rectangle()
                 .fill(.blue)
-            HStack(spacing: 5) {
-                PageButton("启动", "LaunchPageIcon", .launch)
-                PageButton("下载", "DownloadPageIcon", .download)
-                PageButton("联机", "MultiplayerPageIcon", .multiplayer)
-                PageButton("设置", "SettingsPageIcon", .settings)
-                PageButton("更多", "OthersPageIcon", .other)
+            HStack(alignment: .center) {
+                Image("Title")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 19)
+                    .padding()
+                Spacer()
+                HStack(spacing: 5) {
+                    PageButton("启动", "LaunchPageIcon", .launch)
+                    PageButton("下载", "DownloadPageIcon", .download)
+                    PageButton("联机", "MultiplayerPageIcon", .multiplayer)
+                    PageButton("设置", "SettingsPageIcon", .settings)
+                    PageButton("更多", "OthersPageIcon", .other)
+                }
+                Spacer()
             }
         }
         .frame(height: 48)

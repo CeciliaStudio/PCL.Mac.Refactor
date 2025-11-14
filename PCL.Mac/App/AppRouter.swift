@@ -11,14 +11,10 @@ enum AppRoute {
     case launch, download, multiplayer, settings, other
 }
 
-class AppRouter {
+class AppRouter: ObservableObject {
     static let shared: AppRouter = .init()
     
-    var path: [AppRoute] = [.launch] {
-        didSet {
-            DataManager.shared.objectWillChange.send()
-        }
-    }
+    @Published private(set) var path: [AppRoute] = [.launch]
     
     @ViewBuilder
     var content: some View {

@@ -32,9 +32,9 @@ struct TitleBarView: View {
 }
 
 private struct PageButton: View {
-    @ObservedObject private var dataManager: DataManager = .shared
-    @State private var isRoot: Bool
+    @ObservedObject private var router: AppRouter = .shared
     @State private var isHovered: Bool = false
+    private var isRoot: Bool { router.getRoot() == route }
     private let label: String
     private let image: String
     private let route: AppRoute
@@ -43,7 +43,6 @@ private struct PageButton: View {
         self.label = label
         self.image = image
         self.route = route
-        self._isRoot = State(initialValue: AppRouter.shared.getRoot() == route)
     }
     
     var body: some View {
@@ -60,25 +59,20 @@ private struct PageButton: View {
             }
         }
         .frame(width: 78, height: 27)
-        .onChange(of: AppRouter.shared.getRoot()) { newValue in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                isRoot = AppRouter.shared.getRoot() == route
-            }
-        }
         .contentShape(Rectangle())
         .onHover { isHovered in
-            withAnimation(.easeInOut(duration: 0.1)) {
-                self.isHovered = isHovered
-            }
+            self.isHovered = isHovered
         }
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                    if AppRouter.shared.getRoot() != route {
-                        AppRouter.shared.setRoot(route)
+                    if router.getRoot() != route {
+                        router.setRoot(route)
                     }
                 }
         )
+        .animation(.easeInOut(duration: 0.2), value: isRoot)
+        .animation(.easeInOut(duration: 0.2), value: isHovered)
     }
     
     private var foregroundColor: Color {

@@ -63,13 +63,20 @@ public class TaskManager: ObservableObject {
         log("正在取消任务 \(id)")
         if let task = executorTasks[id] {
             task.cancel()
-            clean(for: id)
+            Task { @MainActor in
+                self.clean(for: id)
+            }
         }
     }
     
+    @MainActor
     private func clean(for id: UUID) {
         tasks.removeAll(where: { $0.id == id })
         executorTasks.removeValue(forKey: id)
+        
+        if tasks.isEmpty {
+            AppRouter.shared.setRoot(.launch)
+        }
     }
     
     private init() {

@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import Core
 
+@MainActor
 public class TaskManager: ObservableObject {
     public static let shared: TaskManager = .init()
     
@@ -23,7 +24,6 @@ public class TaskManager: ObservableObject {
     ///   - display: 是否显示与弹出 hint。
     ///   - completion: 任务完成回调。
     /// - Returns: 执行此任务的 Swift `Task`。
-    @MainActor
     @discardableResult
     public func execute<Model>(task: MyTask<Model>, display: Bool = true, completion: ((Error?) -> Void)? = nil) -> Task<Void, Error> {
         let id: UUID = task.id
@@ -74,8 +74,11 @@ public class TaskManager: ObservableObject {
         tasks.removeAll(where: { $0.id == id })
         executorTasks.removeValue(forKey: id)
         
-        if tasks.isEmpty {
-            AppRouter.shared.setRoot(.launch)
+        // Only pop back if we are still on the tasks page.
+        // This avoids double‑popping when the task completion already handled navigation
+        // (e.g., when a Minecraft installation finishes and goes straight to .minecraftDownload).
+        if tasks.isEmpty, AppRouter.shared.last == .tasks {
+            AppRouter.shared.removeLast()
         }
     }
     

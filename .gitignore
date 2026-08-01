@@ -1,6 +1,6 @@
 # macOS
-.DS_Store
-_MACOSX
+**/.DS_Store
+**/_MACOSX
 
 # Xcode
 PCL.Mac.xcodeproj/xcuserdata

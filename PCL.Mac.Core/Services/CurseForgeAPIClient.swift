@@ -35,18 +35,17 @@ public class CurseForgeAPIClient {
         method: String = "GET",
         headers: [String: String?] = [:],
         body: [String: Any]? = nil
-    ) async throws -> Requests.Response {
+    ) async throws -> HTTPClient.Response {
         await semaphore.wait()
         defer { Task { await semaphore.signal() } }
         var headers: [String: String?] = headers
         headers["x-api-key"] = apiKey
         
-        let response = try await Requests.request(
+        let response = try await HTTPClient.shared.request(
             url: apiRoot.appending(path: path),
             method: method,
             headers: headers,
             body: body,
-            using: .json,
             revalidate: true,
             timeout: 30
         )

@@ -149,13 +149,13 @@ private struct ModLoaderCard: View {
             }
             let versions: [Version] = switch type {
             case .fabric:
-                try await Requests.get(url).json().arrayValue
+                try await HTTPClient.shared.get(url).json().arrayValue
                     .map { Version(id: $0["loader"]["version"].stringValue) }
             case .forge:
-                try await Requests.get(url).json().arrayValue
+                try await HTTPClient.shared.get(url).json().arrayValue
                     .map { Version(id: $0["version"].stringValue) }
             case .neoforge:
-                try await Requests.get(url).json().arrayValue
+                try await HTTPClient.shared.get(url).json().arrayValue
                     .map { json in
                         let version: String = json["version"].stringValue
                         return Version(id: version.hasPrefix("1.20.1-") ? String(version.dropFirst("1.20.1-".count)) : version)

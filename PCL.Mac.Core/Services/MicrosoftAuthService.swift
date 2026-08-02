@@ -131,8 +131,8 @@ public class MicrosoftAuthService {
         public let uhs: String
     }
     
-    private func post(_ url: URLConvertible, _ body: [String: Any], encodeMethod: Requests.EncodeMethod = .json) async throws -> JSON {
-        let response = try await Requests.post(url, body: body, using: encodeMethod)
+    private func post(_ url: URLConvertible, _ body: [String: Any], encodeMethod: HTTPClient.EncodeMethod = .json) async throws -> JSON {
+        let response = try await HTTPClient.shared.post(url, body: body, using: encodeMethod)
         let json: JSON = try response.json()
         guard let string: String = .init(data: response.data, encoding: .utf8) else { throw Error.internalError }
         
@@ -208,7 +208,7 @@ public class MicrosoftAuthService {
     }
     
     private func getMinecraftProfile(with token: String) async throws -> PlayerProfile? {
-        let json: JSON = try await Requests.get(
+        let json: JSON = try await HTTPClient.shared.get(
             "https://api.minecraftservices.com/minecraft/profile",
             headers: [
                 "Authorization": "Bearer \(token)"
@@ -224,7 +224,7 @@ public class MicrosoftAuthService {
         }
         // 该接口返回的 JSON 不是标准档案格式，需要根据 UUID 再获取一次
         let id: String = json["id"].stringValue
-        let data: Data = try await Requests.get("https://sessionserver.mojang.com/session/minecraft/profile/\(id)").data
+        let data: Data = try await HTTPClient.shared.get("https://sessionserver.mojang.com/session/minecraft/profile/\(id)").data
         return try JSONDecoder.shared.decode(PlayerProfile.self, from: data)
     }
 }

@@ -30,7 +30,7 @@ class JavaSettingsViewModel: ObservableObject {
     }
     
     public func javaDownloads(forArchitecture architecture: Architecture = .systemArchitecture()) async throws -> [MojangJavaList.JavaDownload] {
-        let list: MojangJavaList = try await Requests.get("https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json").decode(MojangJavaList.self)
+        let list: MojangJavaList = try await HTTPClient.shared.get("https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json").decode(MojangJavaList.self)
         return (list.entries[architecture == .arm64 ? "mac-os-arm64" : "mac-os"] ?? [:])
             .map { ($0.key, $0.value) }
             .filter { Self.javaDownloadIds.contains($0.0) }

@@ -35,12 +35,6 @@ public enum LaunchError: Error {
     case missingRepository
 }
 
-public enum RequestError: Error {
-    case invalidURL
-    case invalidType
-    case badResponse
-}
-
 public enum TaskError: Error, Equatable {
     case invalidOrdinal(value: Int)
     case unknownError

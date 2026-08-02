@@ -37,13 +37,11 @@ public class CLAPIClient {
     private init() {}
     
     private func request(path: String, method: String, body: [String: Any]?) async throws -> Response {
-        let json: JSON = try await Requests.request(
+        let json: JSON = try await HTTPClient.shared.request(
             url: apiRoot.appending(path: path),
             method: method,
-            headers: [:],
             body: body,
-            using: .json,
-            revalidate: false,
+            throwOnError: true,
             timeout: 30
         ).json()
         return .init(json: json)

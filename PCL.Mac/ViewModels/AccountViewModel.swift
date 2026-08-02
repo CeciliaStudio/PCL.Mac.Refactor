@@ -94,7 +94,7 @@ class AccountViewModel: ObservableObject {
                 err("解析 textures 属性失败")
                 return defaultSkin
             }
-            return try await Requests.get(url).data
+            return try await HTTPClient.shared.get(url).data
         } catch {
             err("获取皮肤数据失败：\(error.localizedDescription)")
             return defaultSkin

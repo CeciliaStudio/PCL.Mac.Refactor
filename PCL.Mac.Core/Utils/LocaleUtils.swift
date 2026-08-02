@@ -26,7 +26,7 @@ public enum LocaleUtils {
         }
         do {
             let response: String = try String(
-                data: await Requests.get("https://www.cloudflare-cn.com/cdn-cgi/trace", revalidate: true, timeout: 10).data,
+                data: await HTTPClient.shared.get("https://www.cloudflare-cn.com/cdn-cgi/trace", revalidate: true, timeout: 10).data,
                 encoding: .utf8
             ).unwrap("解析字符串失败。")
             let inChinaMainland = response.contains("\nloc=CN\n")

@@ -102,11 +102,9 @@ public extension VersionManifest {
     @discardableResult
     static func load(revalidate: Bool = false) async throws -> VersionManifest {
         let cacheURL = URLConstants.cacheURL.appending(path: "version_manifest.json")
-        guard let url = DownloadSourceManager.shared.versionManifestURL() else {
-            throw RequestError.invalidURL
-        }
+        let url = DownloadSourceManager.shared.versionManifestURL()!
 
-        let response = try await Requests.get(url, revalidate: revalidate)
+        let response = try await HTTPClient.shared.get(url, revalidate: revalidate)
         let manifest = try response.decode(VersionManifest.self)
         if Self.shared == nil || Self.shared != manifest {
             log("刷新版本清单成功")

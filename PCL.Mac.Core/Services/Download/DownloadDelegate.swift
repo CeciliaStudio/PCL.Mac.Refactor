@@ -66,7 +66,10 @@ public class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
         }
         
         guard let response = downloadTask.response.flatMap({ $0 as? HTTPURLResponse }) else {
-            resume(task: downloadTask, with: .failure(RequestError.badResponse))
+            resume(
+                task: downloadTask,
+                with: .failure(ResponseError(.invalidType, url: downloadTask.originalRequest?.url, response: downloadTask.response))
+            )
             return
         }
         guard (200..<300).contains(response.statusCode) else {

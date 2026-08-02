@@ -170,7 +170,7 @@ public enum MinecraftInstanceLoader {
             
             do {
                 let sha1 = try FileUtils.sha1(of: jarURL)
-                let lookupResult = try await Requests.get("https://cylorine.studio/meta/mc/version_lookup/sha1/\(sha1)").json()
+                let lookupResult = try await HTTPClient.shared.get("https://cylorine.studio/meta/mc/version_lookup/sha1/\(sha1)").json()
                 return .init(lookupResult["version"].stringValue)
             } catch {}
         }

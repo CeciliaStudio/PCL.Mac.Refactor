@@ -19,7 +19,7 @@ public enum JavaInstallTask {
                 if FileManager.default.fileExists(atPath: bundleDestination.path) {
                     throw SimpleError("已存在版本相同的 Mojang Java！")
                 }
-                model.manifest = try await Requests.get(download.manifestURL).decode(MojangJavaManifest.self)
+                model.manifest = try await HTTPClient.shared.get(download.manifestURL).decode(MojangJavaManifest.self)
             },
             .init(1, "下载文件") { task, model in
                 try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)

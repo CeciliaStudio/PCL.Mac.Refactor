@@ -37,7 +37,7 @@ public class ModrinthAPIClient {
         }
         let facetsString: String = String(data: try JSONSerialization.data(withJSONObject: facets), encoding: .utf8)!
         
-        let response = try await Requests.get(
+        let response = try await HTTPClient.shared.get(
             apiRoot.appending(path: "/v2/search"),
             params: [
                 "query": query == "" ? nil : query,
@@ -55,7 +55,7 @@ public class ModrinthAPIClient {
     ///   - revalidate: 是否验证本地缓存有效性。
     /// - Returns: 对应的 `ModrinthProject`。
     public func project(_ slug: String, revalidate: Bool = false) async throws -> ModrinthProject {
-        return try await Requests.get(apiRoot.appending(path: "/v2/project/\(slug)"), revalidate: revalidate).decode(ModrinthProject.self)
+        return try await HTTPClient.shared.get(apiRoot.appending(path: "/v2/project/\(slug)"), revalidate: revalidate).decode(ModrinthProject.self)
     }
     
     /// 批量获取指定 id 或 slug 对应的 `ModrinthProject`
@@ -65,7 +65,7 @@ public class ModrinthAPIClient {
     /// - Returns: 对应的 `[ModrinthProject]`，长度可能与 `slugs` 不一致。
     public func projects(_ slugs: [String], revalidate: Bool = false) async throws -> [ModrinthProject] {
         let idsString = String(data: try JSONSerialization.data(withJSONObject: slugs), encoding: .utf8)!
-        return try await Requests.get(
+        return try await HTTPClient.shared.get(
             apiRoot.appending(path: "/v2/projects"),
             params: ["ids": idsString],
             revalidate: revalidate
@@ -78,7 +78,7 @@ public class ModrinthAPIClient {
     ///   - revalidate: 是否验证本地缓存有效性。
     /// - Returns: 该 project 的所有 `ModrinthVersion`（`[ModrinthVersion]`）。
     public func versions(ofProject slug: String, revalidate: Bool = false) async throws -> [ModrinthVersion] {
-        return try await Requests.get(apiRoot.appending(path: "/v2/project/\(slug)/version"), revalidate: revalidate).decode([ModrinthVersion].self)
+        return try await HTTPClient.shared.get(apiRoot.appending(path: "/v2/project/\(slug)/version"), revalidate: revalidate).decode([ModrinthVersion].self)
     }
     
     /// 获取指定 project 的所有 `ModrinthVersion`。
@@ -94,14 +94,14 @@ public class ModrinthAPIClient {
     /// - Parameter slug: 指定 id。
     /// - Returns: 对应的 `ModrinthVersion`。
     public func version(_ id: String) async throws -> ModrinthVersion {
-        return try await Requests.get(apiRoot.appending(path: "/v2/version/\(id)")).decode(ModrinthVersion.self)
+        return try await HTTPClient.shared.get(apiRoot.appending(path: "/v2/version/\(id)")).decode(ModrinthVersion.self)
     }
     
     /// 根据文件的 SHA-1 哈希值查询 `ModrinthVersion`。
     /// - Parameter hash: 文件的 SHA-1 哈希值。
     /// - Returns: 如果找到则返回对应的 `ModrinthVersion`，否则返回 `nil`。
     public func version(ofHash hash: String) async throws -> ModrinthVersion? {
-        let response = try await Requests.get(apiRoot.appending(path: "/v2/version_file/\(hash)"))
+        let response = try await HTTPClient.shared.get(apiRoot.appending(path: "/v2/version_file/\(hash)"))
         if response.statusCode == 404 { return nil }
         return try response.decode(ModrinthVersion.self)
     }
@@ -110,7 +110,7 @@ public class ModrinthAPIClient {
     /// - Parameter hashes: 所有文件的 SHA-1 哈希值（`[String]`）。
     /// - Returns: 包含所有找到的 `ModrinthVersion` 的 dict。
     public func versions(ofHashes hashes: [String]) async throws -> [String: ModrinthVersion] {
-        return try await Requests.post(
+        return try await HTTPClient.shared.post(
             apiRoot.appending(path: "/v2/version_files"),
             body: [
                 "hashes": hashes,

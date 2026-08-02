@@ -22,7 +22,7 @@ struct NetworkImage: View {
             .scaledToFit()
             .task(id: url) {
                 do {
-                    let data: Data = try await Requests.get(url).data
+                    let data: Data = try await HTTPClient.shared.get(url).data
                     guard let nsImage: NSImage = .init(data: data) else {
                         throw SimpleError("解码 NSImage 失败。")
                     }

@@ -21,7 +21,7 @@ class UpdateManager {
     
     public func checkUpdates() async throws -> UpdateModel.Version? {
         if Metadata.debugMode || Metadata.bundleVersion == 0 { return nil }
-        let model: UpdateModel = try await Requests.get(updateMetadataURL, revalidate: true).decode(UpdateModel.self)
+        let model: UpdateModel = try await HTTPClient.shared.get(updateMetadataURL, revalidate: true).decode(UpdateModel.self)
         return Metadata.bundleVersion >= model.latestVersion.bundleVersion ? nil : model.latestVersion
     }
     

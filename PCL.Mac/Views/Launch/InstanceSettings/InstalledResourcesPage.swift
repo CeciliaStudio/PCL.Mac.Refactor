@@ -80,6 +80,7 @@ struct InstalledResourcesPage: View {
                                 VStack(spacing: 0) {
                                     ForEach(resources, id: \.id) { resource in
                                         ResourceListItem(viewModel: viewModel, resource: resource)
+                                            .equatable()
                                     }
                                 }
                             }
@@ -120,6 +121,7 @@ struct InstalledResourcesPage: View {
 private struct ResourceListItem: View {
     @ObservedObject private var viewModel: InstalledResourcesViewModel
     @ObservedObject private var resource: ResourceDisplayModel
+    @State private var hovered: Bool = false
     
     init(viewModel: InstalledResourcesViewModel, resource: ResourceDisplayModel) {
         self.viewModel = viewModel
@@ -127,7 +129,7 @@ private struct ResourceListItem: View {
     }
     
     var body: some View {
-        MyListItem { hovered in
+        MyListItem {
             HStack {
                 resource.icon.makeView()
                     .scaledToFit()
@@ -207,5 +209,11 @@ private struct ResourceListItem: View {
             err("\(type)资源失败：\(error.localizedDescription)")
             hint("\(type)资源失败：\(error.localizedDescription)", type: .critical)
         }
+    }
+}
+
+extension ResourceListItem: Equatable {
+    static func == (lhs: ResourceListItem, rhs: ResourceListItem) -> Bool {
+        lhs.resource == rhs.resource && lhs.viewModel === rhs.viewModel
     }
 }

@@ -58,6 +58,7 @@ class LaunchViewModel: ObservableObject {
         launchManager.launch(instance, using: account, in: repository)
     }
     
+    @MainActor
     public func cancel() {
         launchManager.cancel()
     }

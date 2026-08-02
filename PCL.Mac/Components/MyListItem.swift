@@ -8,10 +8,16 @@
 import SwiftUI
 
 struct MyListItem<Content: View>: View {
-    private let content: () -> Content
+    @State private var hovered: Bool = false
+    @State private var backgroundScale: CGFloat = 0.92
+    private let content: (Bool) -> Content
+    
+    init(_ content: @escaping (Bool) -> Content) {
+        self.content = content
+    }
     
     init(_ content: @escaping () -> Content) {
-        self.content = content
+        self.init({ _ in content() })
     }
     
     init(_ model: ListItem, selected: Bool = false) where Content == AnyView {
@@ -47,30 +53,25 @@ struct MyListItem<Content: View>: View {
     }
     
     var body: some View {
-        content()
+        content(hovered)
             .frame(maxWidth: .infinity)
             .padding(4)
             .contentShape(Rectangle())
-            .modifier(HoverBackgroundModifier())
-    }
-}
-
-private struct HoverBackgroundModifier: ViewModifier {
-    @State private var hovered = false
-    @State private var backgroundScale: CGFloat = 0.92
-    
-    func body(content: Content) -> some View {
-        content
             .background {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(hovered ? Color.color2.opacity(0.1) : .clear)
                     .scaleEffect(backgroundScale)
                     .allowsHitTesting(false)
             }
-            .animation(.spring(response: 0.2), value: hovered)
-            .onHover { hovering in
-                self.hovered = hovering
-                backgroundScale = hovering ? 1 : 0.92
+            .onHover { hovered in
+                withAnimation(.spring(response: 0.2)) {
+                    self.hovered = hovered
+                    if hovered {
+                        backgroundScale = 1
+                    } else {
+                        backgroundScale = 0.92
+                    }
+                }
             }
     }
 }

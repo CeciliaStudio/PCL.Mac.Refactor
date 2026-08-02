@@ -139,7 +139,41 @@ struct LaunchSidebar: Sidebar {
     private var accountList: some View {
         VStack(spacing: 0) {
             ForEach(accountVM.accounts, id: \.id) { account in
-                AccountRow(accountVM: accountVM, account: account)
+                MyListItem { hovered in
+                    HStack {
+                        if account.id == accountVM.currentAccount?.id {
+                            RightRoundedRectangle(cornerRadius: 4)
+                                .fill(Color.color3)
+                                .frame(width: 4, height: 20)
+                                .offset(x: -4)
+                        } else {
+                            Spacer()
+                                .frame(width: 12)
+                        }
+                        PlayerAvatar(account, length: 36)
+                        VStack(alignment: .leading) {
+                            MyText(account.profile.name)
+                            MyText(account.localizedTypeName, color: .colorGray3)
+                        }
+                        Spacer()
+                        if hovered {
+                            Image(systemName: "trash")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 12)
+                                .foregroundStyle(Color.color3)
+                                .padding(.trailing, 8)
+                                .contentShape(.rect)
+                                .onTapGesture {
+                                    accountVM.remove(account: account)
+                                    hint("移除成功！", type: .finish)
+                                }
+                        }
+                    }
+                }
+                .onTapGesture {
+                    accountVM.switchAccount(to: account)
+                }
             }
         }
         .animation(.easeInOut(duration: 0.2), value: accountVM.currentAccount?.id)
@@ -264,51 +298,6 @@ struct LaunchSidebar: Sidebar {
             content()
         }
         .padding(.horizontal)
-    }
-}
-
-private struct AccountRow: View {
-    @ObservedObject var accountVM: AccountViewModel
-    @State private var hovered = false
-    let account: Account
-    
-    var body: some View {
-        MyListItem {
-            HStack {
-                if account.id == accountVM.currentAccount?.id {
-                    RightRoundedRectangle(cornerRadius: 4)
-                        .fill(Color.color3)
-                        .frame(width: 4, height: 20)
-                        .offset(x: -4)
-                } else {
-                    Spacer()
-                        .frame(width: 12)
-                }
-                PlayerAvatar(account, length: 36)
-                VStack(alignment: .leading) {
-                    MyText(account.profile.name)
-                    MyText(account.localizedTypeName, color: .colorGray3)
-                }
-                Spacer()
-                if hovered {
-                    Image(systemName: "trash")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 12)
-                        .foregroundStyle(Color.color3)
-                        .padding(.trailing, 8)
-                        .contentShape(.rect)
-                        .onTapGesture {
-                            accountVM.remove(account: account)
-                            hint("移除成功！", type: .finish)
-                        }
-                }
-            }
-        }
-        .onHover { hovered = $0 }
-        .onTapGesture {
-            accountVM.switchAccount(to: account)
-        }
     }
 }
 

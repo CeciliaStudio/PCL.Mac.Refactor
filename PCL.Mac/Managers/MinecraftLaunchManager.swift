@@ -71,7 +71,6 @@ class MinecraftLaunchManager: ObservableObject {
     }
     
     /// 取消当前启动任务。
-    @MainActor
     public func cancel() {
         if let task {
             TaskManager.shared.cancel(task.id)

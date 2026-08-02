@@ -9,7 +9,6 @@ import Foundation
 import Combine
 import Core
 
-@MainActor
 public class TaskManager: ObservableObject {
     public static let shared: TaskManager = .init()
     

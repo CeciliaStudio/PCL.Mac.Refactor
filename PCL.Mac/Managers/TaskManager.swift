@@ -63,9 +63,7 @@ public class TaskManager: ObservableObject {
         log("正在取消任务 \(id)")
         if let task = executorTasks[id] {
             task.cancel()
-            Task { @MainActor in
-                self.clean(for: id)
-            }
+            clean(for: id)
         }
     }
     
@@ -74,9 +72,6 @@ public class TaskManager: ObservableObject {
         tasks.removeAll(where: { $0.id == id })
         executorTasks.removeValue(forKey: id)
         
-        // Only pop back if we are still on the tasks page.
-        // This avoids double‑popping when the task completion already handled navigation
-        // (e.g., when a Minecraft installation finishes and goes straight to .minecraftDownload).
         if tasks.isEmpty, AppRouter.shared.last == .tasks {
             AppRouter.shared.removeLast()
         }

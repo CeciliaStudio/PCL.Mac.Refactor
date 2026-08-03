@@ -43,8 +43,12 @@ class ResourceInstallViewModel: ObservableObject {
                       dependency.isRequired else {
                     continue
                 }
-                let project: ModrinthProject = try await ModrinthAPIClient.shared.project(projectId)
-                dependencies.append(.init(versionId: dependency.id, projectId: projectId, project: .init(project)))
+                if let project = try await ModrinthAPIClient.shared.project(projectId) {
+                    dependencies.append(.init(versionId: dependency.id, projectId: projectId, project: .init(project)))
+                } else {
+                    warn("依赖 \(projectId) 在 Modrinth 上已不存在")
+                    debug(version)
+                }
             }
             
             var keys: [VersionMapKey] = []

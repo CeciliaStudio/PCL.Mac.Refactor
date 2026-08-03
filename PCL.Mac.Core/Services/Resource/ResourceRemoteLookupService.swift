@@ -18,8 +18,8 @@ public class ResourceRemoteLookupService {
     
     /// 根据 SHA-1 哈希值查询单个资源。
     public func lookup(hash: String) async throws -> RemoteResourceInfo? {
-        if let modrinthVersion = try await modrinthClient.version(ofHash: hash) {
-            let project = try await modrinthClient.project(modrinthVersion.projectId, revalidate: true)
+        if let modrinthVersion = try await modrinthClient.version(ofHash: hash),
+           let project = try await modrinthClient.project(modrinthVersion.projectId, revalidate: true) {
             return RemoteResourceInfo(project, version: modrinthVersion)
         }
         

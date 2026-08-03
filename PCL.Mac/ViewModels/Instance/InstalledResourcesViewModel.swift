@@ -133,7 +133,10 @@ class InstalledResourcesViewModel: ObservableObject {
         for source in resource.sources {
             if case .modrinth(let projectId) = source {
                 do {
-                    let project = try await ModrinthAPIClient.shared.project(projectId)
+                    guard let project = try await ModrinthAPIClient.shared.project(projectId) else {
+                        warn("记录了 \(resource.fileName) 对应的 Modrinth projectId（\(projectId)），但它在 Modrinth 上已不存在")
+                        return nil
+                    }
                     return .init(project)
                 } catch {
                     throw SimpleError("查询 Modrinth Project 失败：\(error.localizedDescription)")

@@ -53,9 +53,11 @@ public class ModrinthAPIClient {
     /// - Parameters:
     ///   - slug: 指定 id 或 slug。
     ///   - revalidate: 是否验证本地缓存有效性。
-    /// - Returns: 对应的 `ModrinthProject`。
-    public func project(_ slug: String, revalidate: Bool = false) async throws -> ModrinthProject {
-        return try await HTTPClient.shared.get(apiRoot.appending(path: "/v2/project/\(slug)"), revalidate: revalidate).decode(ModrinthProject.self)
+    /// - Returns: 对应的 `ModrinthProject`，不存在时返回 `nil`。
+    public func project(_ slug: String, revalidate: Bool = false) async throws -> ModrinthProject? {
+        let response = try await HTTPClient.shared.get(apiRoot.appending(path: "/v2/project/\(slug)"), revalidate: revalidate)
+        if response.statusCode == 404 { return nil }
+        return try response.decode(ModrinthProject.self)
     }
     
     /// 批量获取指定 id 或 slug 对应的 `ModrinthProject`
@@ -92,9 +94,11 @@ public class ModrinthAPIClient {
     
     /// 获取指定 id 对应的 `ModrinthVersion`。
     /// - Parameter slug: 指定 id。
-    /// - Returns: 对应的 `ModrinthVersion`。
-    public func version(_ id: String) async throws -> ModrinthVersion {
-        return try await HTTPClient.shared.get(apiRoot.appending(path: "/v2/version/\(id)")).decode(ModrinthVersion.self)
+    /// - Returns: 对应的 `ModrinthVersion`，不存在时返回 `nil`。
+    public func version(_ id: String) async throws -> ModrinthVersion? {
+        let response = try await HTTPClient.shared.get(apiRoot.appending(path: "/v2/version/\(id)"))
+        if response.statusCode == 404 { return nil }
+        return try response.decode(ModrinthVersion.self)
     }
     
     /// 根据文件的 SHA-1 哈希值查询 `ModrinthVersion`。

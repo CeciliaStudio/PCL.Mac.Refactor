@@ -98,7 +98,7 @@ public struct MirrorDownloadSource: DownloadSource {
         
         if url.matches(
             prefixes: "files.minecraftforge.net/maven", "maven.neoforged.net/releases",
-            hosts: "libraries.minecraft.net", "maven.fabricmc.net"
+            hosts: "libraries.minecraft.net", "maven.fabricmc.net", "maven.minecraftforge.net"
         ) {
             return bmclapiBaseURL.appending(path: "maven").appending(path: resolveMavenPath(url))
         }

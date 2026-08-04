@@ -27,10 +27,11 @@ public protocol DownloadSource {
     /// Fabric 版本列表 URL。
     func fabricVersionListURL(for minecraftVersion: String) -> URL?
 
-    /// 为指定 URL 生成下载候选项列表。
-    func candidates(for url: URL) -> [DownloadCandidate]
+    /// 为指定 URL 生成在该下载源下的下载候选项。
+    func candidate(for url: URL) -> DownloadCandidate?
 }
 
+/// 官方下载源，在中国大陆地区可能不稳定。
 public struct OfficialDownloadSource: DownloadSource {
     public static let shared: OfficialDownloadSource = .init()
 
@@ -48,15 +49,16 @@ public struct OfficialDownloadSource: DownloadSource {
         URL(string: "https://meta.fabricmc.net/v2/versions/loader/\(minecraftVersion)")
     }
 
-    public func candidates(for url: URL) -> [DownloadCandidate] {
+    public func candidate(for url: URL) -> DownloadCandidate? {
         var headers: [String: String]? = nil
         if url.matches(hosts: "edge.forgecdn.net"), let key = curseforgeApiKey {
             headers = ["x-api-key": key]
         }
-        return [DownloadCandidate(url: url, headers: headers)]
+        return DownloadCandidate(url: url, headers: headers)
     }
 }
 
+/// BMCLAPI / MCIM 中国镜像下载源。
 public struct MirrorDownloadSource: DownloadSource {
     public static let shared: MirrorDownloadSource = .init()
 
@@ -79,11 +81,8 @@ public struct MirrorDownloadSource: DownloadSource {
         bmclapiBaseURL.appending(path: "fabric-meta/v2/versions/loader/\(minecraftVersion)")
     }
 
-    public func candidates(for url: URL) -> [DownloadCandidate] {
-        if let mirrorURL = mirrorURL(for: url) {
-            return [DownloadCandidate(url: mirrorURL)]
-        }
-        return []
+    public func candidate(for url: URL) -> DownloadCandidate? {
+        return mirrorURL(for: url).map { DownloadCandidate(url: $0) }
     }
     
 
@@ -101,7 +100,7 @@ public struct MirrorDownloadSource: DownloadSource {
             prefixes: "files.minecraftforge.net/maven", "maven.neoforged.net/releases",
             hosts: "libraries.minecraft.net", "maven.fabricmc.net"
         ) {
-            return bmclapiBaseURL.appending(path: "maven").appending(path: resolveMavenPath(url.path))
+            return bmclapiBaseURL.appending(path: "maven").appending(path: resolveMavenPath(url))
         }
         
         if url.matches(hosts: "meta.fabricmc.net") {
@@ -115,14 +114,16 @@ public struct MirrorDownloadSource: DownloadSource {
         return nil
     }
 
-    private func resolveMavenPath(_ path: String) -> String {
-        if path.hasPrefix("maven") {
-            return String(path.dropFirst("maven".count))
+    private func resolveMavenPath(_ url: URL) -> String {
+        if url.pathComponents.count == 0 { return "" }
+        var pathComponents = url.pathComponents
+        if pathComponents[0] == "/" { pathComponents.removeFirst() }
+        
+        let prefix = pathComponents[0]
+        if prefix == "maven" || prefix == "releases" {
+            return pathComponents.dropFirst().joined(separator: "/")
         }
-        if path.hasPrefix("releases") {
-            return String(path.dropFirst("releases".count))
-        }
-        return path
+        return url.path
     }
 }
 

@@ -50,16 +50,12 @@ public class DownloadSourceManager {
     ///   - preferMirror: 是否优先使用镜像源，为 `nil` 时由全局策略决定。
     /// - Returns: 按优先级排序的候选项列表。
     public func orderedCandidates(for url: URL, preferMirror: Bool? = nil) -> [DownloadCandidate] {
-        let official = officialSource.candidates(for: url)
-        let mirror = mirrorSource.candidates(for: url)
+        let official = officialSource.candidate(for: url)
+        let mirror = isChinaRegion || (policy == .mirrorFirst || preferMirror == true) ? mirrorSource.candidate(for: url) : nil
+        
+        let preferMirror = preferMirror ?? (policy == .mirrorFirst)
 
-        let effectivePreferMirror = preferMirror ?? (policy == .mirrorFirst)
-
-        if !isChinaRegion && policy != .mirrorFirst && preferMirror != true && !official.isEmpty {
-            return official
-        }
-
-        let merged = effectivePreferMirror ? (mirror + official) : (official + mirror)
+        let merged = (preferMirror ? [mirror, official] : [official, mirror]).compactMap(\.self)
         var seen = Set<URL>()
         return merged.filter { seen.insert($0.url).inserted }
     }

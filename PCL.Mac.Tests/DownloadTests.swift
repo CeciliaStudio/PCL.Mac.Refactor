@@ -60,4 +60,26 @@ struct DownloadTests {
         try await FileDownloader.shared.download(files: Array(items.prefix(128))) { print($0 * 100) }
         try FileManager.default.removeItem(at: tempDirectory)
     }
+    
+    @Test func mirrorURLTest() {
+        let bmclapiRoot = URL(string: "https://bmclapi2.bangbang93.com/")!
+        let bmclapiMavenRoot = bmclapiRoot.appending(path: "maven")
+        
+        let mojangMetaRoot = URL(string: "https://piston-meta.mojang.com/")!
+        let mojangDataRoot = URL(string: "https://piston-data.mojang.com/")!
+        
+        let forgeMavenRoot = URL(string: "https://files.minecraftforge.net/maven")!
+        
+        let manifestPath = "v1/packages/3457237902814cca3f5c6f20b0c5db1b1f341512/26.2.json"
+        #expect(MirrorDownloadSource.shared.candidate(for: mojangMetaRoot.appending(path: manifestPath))?.url
+                == bmclapiRoot.appending(path: manifestPath))
+        
+        let jarPath = "v1/objects/2dc72797acbc1b63fc16a11c4ac393605f453754/client.jar"
+        #expect(MirrorDownloadSource.shared.candidate(for: mojangDataRoot.appending(path: jarPath))?.url
+                == bmclapiRoot.appending(path: jarPath))
+        
+        let installerPath = "net/minecraftforge/forge/1.20.1-47.4.22/forge-1.20.1-47.4.22-installer.jar"
+        #expect(MirrorDownloadSource.shared.candidate(for: forgeMavenRoot.appending(path: installerPath))?.url
+                == bmclapiMavenRoot.appending(path: installerPath))
+    }
 }

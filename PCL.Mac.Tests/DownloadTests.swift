@@ -81,5 +81,7 @@ struct DownloadTests {
         let installerPath = "net/minecraftforge/forge/1.20.1-47.4.22/forge-1.20.1-47.4.22-installer.jar"
         #expect(MirrorDownloadSource.shared.candidate(for: forgeMavenRoot.appending(path: installerPath))?.url
                 == bmclapiMavenRoot.appending(path: installerPath))
+        
+        #expect(MirrorDownloadSource.shared.candidate(for: URL(string: "https://libraries.minecraft.net/")!)?.url == bmclapiMavenRoot)
     }
 }

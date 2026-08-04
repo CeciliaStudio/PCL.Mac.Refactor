@@ -119,7 +119,7 @@ public struct MirrorDownloadSource: DownloadSource {
         var pathComponents = url.pathComponents
         if pathComponents[0] == "/" { pathComponents.removeFirst() }
         
-        let prefix = pathComponents[0]
+        let prefix = pathComponents.first
         if prefix == "maven" || prefix == "releases" {
             return pathComponents.dropFirst().joined(separator: "/")
         }

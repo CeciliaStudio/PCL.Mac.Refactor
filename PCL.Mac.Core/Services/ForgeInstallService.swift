@@ -91,8 +91,13 @@ public class ForgeInstallService {
     /// 下载安装器本体并解析。
     /// - Returns: 是否是新版本安装器，且需要继续执行后续步骤。
     private func downloadInstaller(progressHandler: @MainActor @escaping (Double) -> Void) async throws -> Bool {
-        let destination: URL = tempDirectory.appending(path: "installer.jar")
-        try await FileDownloader.shared.download(url: installerDownloadURL(), destination: destination, progressHandler: progressHandler)
+        let destination = tempDirectory.appending(path: "installer.jar")
+        let item = DownloadItem(
+            urls: installerDownloadURLs(),
+            destination: destination,
+            checksums: nil
+        )
+        try await FileDownloader.shared.download(item, progressHandler: progressHandler)
         _ = try FileManager.default.unzipItem(at: destination, to: installerURL)
         
         // 处理客户端清单
@@ -127,12 +132,14 @@ public class ForgeInstallService {
         }
     }
     
-    internal func installerDownloadURL() -> URL {
-        let path = version.compare("11.14.0.1296", options: .numeric) != .orderedAscending
-        ? "net/minecraftforge/forge/\(minecraftVersion)-\(version)/forge-\(minecraftVersion)-\(version)-installer.jar"
-        : "net/minecraftforge/forge/\(minecraftVersion)-\(version)-\(minecraftVersion)/forge-\(minecraftVersion)-\(version)-\(minecraftVersion)-installer.jar"
+    internal func installerDownloadURLs() -> [URL] {
+        let root = URL(string: "https://files.minecraftforge.net/maven")!
+        let paths = [
+            "net/minecraftforge/forge/\(minecraftVersion)-\(version)/forge-\(minecraftVersion)-\(version)-installer.jar",
+            "net/minecraftforge/forge/\(minecraftVersion)-\(version)-\(minecraftVersion)/forge-\(minecraftVersion)-\(version)-\(minecraftVersion)-installer.jar"
+        ]
         
-        return .init(string: "https://files.minecraftforge.net/maven")!.appending(path: path)
+        return paths.map(root.appending(path:))
     }
     
     private func makeValueDict() -> [String: String] {

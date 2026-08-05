@@ -48,7 +48,12 @@ public class FileDownloader {
 
         try FileManager.default.createDirectory(at: file.destination.deletingLastPathComponent(), withIntermediateDirectories: true)
 
-        let candidates = sourceManager.orderedCandidates(for: file.url, preferMirror: preferMirror)
+        let candidates = file.urls.flatMap { sourceManager.orderedCandidates(for: $0, preferMirror: preferMirror) }
+        if candidates.isEmpty {
+            err("\(file.destination.lastPathComponent) 的候选列表为空")
+            throw DownloadError.unknownError
+        }
+        
         var lastError: Error?
 
         for candidate in candidates {

@@ -15,6 +15,7 @@ public struct LaunchOptions {
     public var manifest: ClientManifest!
     public var repository: MinecraftRepository!
     public var memory: UInt64 = 4096
+    public var extraJvmArguments: [String] = []
     public var demo: Bool = false
     
     // Authlib Injector

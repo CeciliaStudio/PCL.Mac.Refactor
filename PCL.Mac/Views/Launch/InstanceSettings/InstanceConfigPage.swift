@@ -72,6 +72,12 @@ struct InstanceConfigPage: View {
                     }
                 MyText("MB")
             }
+            configLine(label: "JVM 参数") {
+                MyTextField(text: $viewModel.jvmArguments, placeholder: "例如 -XX:+UseG1GC -Dfile.encoding=UTF-8")
+                    .onChange(of: viewModel.jvmArguments) { newValue in
+                        viewModel.setJvmArguments(newValue)
+                    }
+            }
             HStack(spacing: 30) {
                 MyButton("切换 Java") {
                     let runtimes: [JavaRuntime] = viewModel.javaList()

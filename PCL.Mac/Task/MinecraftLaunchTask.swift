@@ -391,7 +391,7 @@ public enum MinecraftLaunchTask {
             self.options.runningDirectory = instance.url
             self.options.repository = repository
             self.options.memory = instance.config.jvmHeapSize
-            self.options.extraJvmArguments = instance.config.jvmArguments?.splitToArguments() ?? []
+            self.options.extraJvmArguments = instance.config.jvmArguments
         }
     }
 }

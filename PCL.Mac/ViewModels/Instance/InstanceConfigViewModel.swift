@@ -37,7 +37,7 @@ class InstanceConfigViewModel: ObservableObject {
         self.id = id
         self.instance = instanceManager.currentRepository.instance(named: id)! // TODO: 改为安全解包
         self.jvmHeapSize = instance.config.jvmHeapSize.description
-        self.jvmArguments = instance.config.jvmArguments ?? ""
+        self.jvmArguments = instance.config.jvmArguments.joinedToArgumentLine()
         do {
             self.javaDescription = try instance.config.javaURL.map(JavaSearcher.load(from:))?.description ?? "无"
         } catch {}
@@ -57,8 +57,7 @@ class InstanceConfigViewModel: ObservableObject {
 
     @MainActor
     public func setJvmArguments(_ arguments: String) {
-        let trimmed: String = arguments.trimmingCharacters(in: .whitespacesAndNewlines)
-        instance.config.jvmArguments = trimmed.isEmpty ? nil : trimmed
+        instance.config.jvmArguments = arguments.splitToArguments()
         instance.markDirty()
     }
 

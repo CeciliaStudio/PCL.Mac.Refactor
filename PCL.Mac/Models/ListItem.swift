@@ -29,6 +29,8 @@ struct ListItem {
         case resource(ImageResource)
         case nsImage(NSImage)
         case network(URL)
+        /// 网络图片中按左上角为原点的像素区域裁剪后显示。
+        case networkCropped(URL, CGRect)
         
         @ViewBuilder
         func makeView() -> some View {
@@ -37,6 +39,7 @@ struct ListItem {
             case .resource(let imageResource): SwiftUI.Image(imageResource).resizable()
             case .nsImage(let nsImage): SwiftUI.Image(nsImage: nsImage).resizable().interpolation(.none)
             case .network(let url): NetworkImage(url: url)
+            case .networkCropped(let url, let cropRect): NetworkImage(url: url, cropRect: cropRect)
             }
         }
     }

@@ -13,13 +13,21 @@ struct LaunchSidebar: Sidebar {
     @StateObject private var accountVM: AccountViewModel = .init()
     @StateObject private var launchVM: LaunchViewModel = .init()
     @State private var addingYggdrasilAccount: Bool = false
-    
+
+    @State private var isAvatarHovered: Bool = false
+    @State private var isToolbarHovered: Bool = false
+    @State private var avatarHoverHideWorkItem: DispatchWorkItem?
+
+    private let avatarHoverHorizontalExpansion: CGFloat = 40
+    private let avatarHoverVerticalExpansion: CGFloat = 40
+    private let toolbarVerticalOffset: CGFloat = 50
+
     init(instanceManager: InstanceManager) {
         self._instanceVM = StateObject(wrappedValue: InstanceViewModel(instanceManager: instanceManager))
     }
-    
+
     let width: CGFloat = 285
-    
+
     private let insertTransition: AnyTransition =
         .asymmetric(
             insertion: .modifier(
@@ -29,7 +37,7 @@ struct LaunchSidebar: Sidebar {
             .animation(.spring(response: 0.2)),
             removal: .opacity
         )
-    
+
     var body: some View {
         if launchVM.isLaunching {
             launchingBody
@@ -37,7 +45,7 @@ struct LaunchSidebar: Sidebar {
             normalBody
         }
     }
-    
+
     private var normalBody: some View {
         VStack {
             Spacer()
@@ -46,9 +54,6 @@ struct LaunchSidebar: Sidebar {
                 case .normal:
                     if let account = accountVM.currentAccount {
                         normalPanel(account)
-                            .onTapGesture {
-                                accountVM.currentPanel = .accountList
-                            }
                     }
                 case .accountList:
                     accountListPanel
@@ -57,7 +62,7 @@ struct LaunchSidebar: Sidebar {
                 }
             }
             .transition(insertTransition)
-            
+
             Spacer()
             VStack(spacing: 11) {
                 Group {
@@ -100,21 +105,121 @@ struct LaunchSidebar: Sidebar {
             }
         }
     }
-    
-    @ViewBuilder
+
     private func normalPanel(_ account: Account) -> some View {
-        MyListItem {
-            VStack(spacing: 15) {
-                PlayerAvatar(account)
-                VStack(spacing: 4) {
-                    MyText(account.profile.name, size: 16)
-                    MyText(account.localizedTypeName, size: 12, color: .colorGray4)
+        ZStack(alignment: .bottom) {
+            MyListItem({ _ in
+                VStack(spacing: 15) {
+                    PlayerAvatar(account)
+                    VStack(spacing: 4) {
+                        MyText(account.profile.name, size: 16)
+                        MyText(account.localizedTypeName, size: 12, color: .colorGray4)
+                    }
                 }
+                .onHover { hovering in
+                    setAvatarHovered(hovering)
+                }
+            }, showsHoverBackground: false)
+            .fixedSize()
+
+            if isAvatarHovered {
+                toolbarView
+                    .fixedSize()
+                    .offset(y: toolbarVerticalOffset)
+                    .zIndex(1)
             }
         }
         .fixedSize()
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .frame(
+                        width: proxy.size.width + avatarHoverHorizontalExpansion * 2,
+                        height: proxy.size.height + avatarHoverVerticalExpansion * 2
+                    )
+                    .contentShape(Rectangle())
+                    .onHover { hovering in
+                        setAvatarHovered(hovering)
+                    }
+                    .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
+            }
+        }
+        .onHover { hovering in
+            setAvatarHovered(hovering)
+        }
+        .zIndex(isAvatarHovered ? 1 : 0)
     }
-    
+
+    private func setAvatarHovered(_ hovering: Bool) {
+        avatarHoverHideWorkItem?.cancel()
+
+        guard !hovering else {
+            isAvatarHovered = true
+            return
+        }
+
+        // 留出一点时间让指针从头像卡片移动到工具栏，避免工具栏提前消失。
+        let workItem = DispatchWorkItem {
+            isAvatarHovered = false
+        }
+        avatarHoverHideWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: workItem)
+    }
+
+    private var toolbarView: some View {
+        HStack(spacing: 16) {
+            Button {
+                guard let account = accountVM.currentAccount else {
+                    hint("请先选择一个账号！", type: .critical)
+                    return
+                }
+                CapeSelection.request(for: account)
+            } label: {
+                Image(systemName: "tshirt.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 18, height: 18)
+            }
+            .buttonStyle(.plain)
+            .help("更换披风")
+
+            Button {
+                accountVM.currentPanel = .accountList
+            } label: {
+                Image(systemName: "arrow.left.arrow.right")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 18, height: 18)
+            }
+            .buttonStyle(.plain)
+            .help("选择档案")
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+        .foregroundStyle(Color.color3)
+        .background {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.regularMaterial)
+                .shadow(
+                    color: isToolbarHovered ? .color3.opacity(0.6) : .black.opacity(0.15),
+                    radius: isToolbarHovered ? 6 : 8,
+                    y: isToolbarHovered ? 0 : 3
+                )
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(
+                    isToolbarHovered ? Color.color3.opacity(0.45) : Color.colorGray2.opacity(0.35),
+                    lineWidth: isToolbarHovered ? 1.2 : 1
+                )
+        }
+        .animation(.easeInOut(duration: 0.2), value: isToolbarHovered)
+        .onHover { hovering in
+            isToolbarHovered = hovering
+            setAvatarHovered(hovering)
+        }
+    }
+
     private var accountListPanel: some View {
         VStack {
             accountList
@@ -124,7 +229,7 @@ struct LaunchSidebar: Sidebar {
                     accountVM.requestAddAccount()
                 }
                 .frame(width: 80)
-                
+
                 if accountVM.currentAccount != nil {
                     MyButton("返回") {
                         accountVM.currentPanel = .normal
@@ -135,7 +240,7 @@ struct LaunchSidebar: Sidebar {
             .frame(height: 30)
         }
     }
-    
+
     private var accountList: some View {
         VStack(spacing: 0) {
             ForEach(accountVM.accounts, id: \.id) { account in
@@ -178,7 +283,7 @@ struct LaunchSidebar: Sidebar {
         }
         .animation(.easeInOut(duration: 0.2), value: accountVM.currentAccount?.id)
     }
-    
+
     private var addYggdrasilAccountPanel: some View {
         VStack {
             fieldLine("服务器") {
@@ -211,7 +316,7 @@ struct LaunchSidebar: Sidebar {
             .padding(.top, 4)
         }
     }
-    
+
     private var launchingBody: some View {
         VStack(spacing: 0) {
             Spacer()
@@ -236,8 +341,7 @@ struct LaunchSidebar: Sidebar {
             .frame(width: 225, height: 4)
             .padding(.top, 12)
             .padding(.bottom, 27)
-            
-            // PanLaunchingInfo
+
             VStack(alignment: .leading) {
                 if let currentStage: String = launchVM.currentStage {
                     launchingInfo(name: "当前步骤", value: currentStage)
@@ -246,8 +350,7 @@ struct LaunchSidebar: Sidebar {
                     AnimatablePercentText(progress: launchVM.progress)
                 }
             }
-            
-            // PanLaunchingHint
+
             ZStack(alignment: .top) {
                 RoundedRectangle(cornerRadius: 3)
                     .stroke(Color.colorGray1, lineWidth: 1)
@@ -266,7 +369,7 @@ struct LaunchSidebar: Sidebar {
             .opacity(launchVM.isRunning ? 1 : 0)
             .padding(.top, 26)
             .fixedSize(horizontal: false, vertical: true)
-            
+
             Spacer()
             MyButton("取消", launchVM.cancel)
                 .frame(height: 32)
@@ -275,13 +378,11 @@ struct LaunchSidebar: Sidebar {
         .animation(.easeOut(duration: 0.2), value: launchVM.progress)
         .animation(.easeOut(duration: 0.1), value: launchVM.isRunning)
     }
-    
-    @ViewBuilder
+
     private func launchingInfo(name: String, value: String) -> some View {
         launchingInfo(name: name) { MyText(value, size: 12.5) }
     }
-    
-    @ViewBuilder
+
     private func launchingInfo(name: String, value: () -> some View) -> some View {
         HStack(spacing: 15) {
             MyText(name, size: 12.5)
@@ -289,8 +390,7 @@ struct LaunchSidebar: Sidebar {
             value()
         }
     }
-    
-    @ViewBuilder
+
     private func fieldLine(_ name: String, content: () -> some View) -> some View {
         HStack(spacing: 0) {
             MyText(name)
@@ -307,7 +407,7 @@ private struct AnimatablePercentText: View, Animatable {
         get { progress }
         set { progress = newValue }
     }
-    
+
     var body: some View {
         let clamped: Double = min(max(progress, 0), 1)
         MyText(String(format: "%.2f %%", clamped * 100), size: 12.5)
@@ -317,7 +417,7 @@ private struct AnimatablePercentText: View, Animatable {
 private struct ScaleOpacityEffect: ViewModifier {
     let scale: CGFloat
     let opacity: Double
-    
+
     func body(content: Content) -> some View {
         content
             .scaleEffect(scale)

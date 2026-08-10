@@ -9,18 +9,32 @@ import Foundation
 
 public enum JavaSearcher {
     /// 内部可能存在 Java 目录（如 `zulu-21.jdk`）的目录
-    private static let javaDirectories: [URL] = [
-        URL(fileURLWithPath: "/Library/Java/JavaVirtualMachines"),
-        FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Java/JavaVirtualMachines")
+    private static let javaDirectories: [URL] = {
+        let homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
+        return [
+            URL(fileURLWithPath: "/Library/Java/JavaVirtualMachines"),
+            homeDirectory.appending(path: "Library/Java/JavaVirtualMachines"),
+            homeDirectory.appending(path: ".jdks"),                          // IntelliJ IDEA
+            homeDirectory.appending(path: ".sdkman/candidates/java"),        // SDKMAN!
+            homeDirectory.appending(path: ".asdf/installs/java"),            // asdf
+            homeDirectory.appending(path: ".local/share/mise/installs/java"), // mise
+            homeDirectory.appending(path: ".jenv/versions"),                 // jEnv
+            homeDirectory.appending(path: ".jabba/jdk"),                     // Jabba
+            homeDirectory.appending(path: ".gradle/jdks")                    // Gradle 工具链
+        ]
+    }()
+
+    /// Homebrew 的 openjdk 安装目录，分别对应 Apple Silicon 与 Intel。
+    private static let homebrewDirectories: [URL] = [
+        URL(fileURLWithPath: "/opt/homebrew/opt"),
+        URL(fileURLWithPath: "/usr/local/opt")
     ]
-    
+
     /// 搜索当前环境中安装的 Java（不包含 `/usr/bin/java`）。
     /// - Returns: 当前环境中安装的 Java 列表。
     public static func search() throws -> [JavaRuntime] {
         var runtimes: [JavaRuntime] = []
-        let bundles: [URL] = try findJavaBundles()
-        for bundle in bundles {
-            let homeDirectory: URL = bundle.appending(path: "Contents/Home")
+        for homeDirectory in findJavaHomes() {
             do {
                 let runtime: JavaRuntime = try load(from: homeDirectory)
                 runtimes.append(runtime)
@@ -34,17 +48,15 @@ public enum JavaSearcher {
     
     /// 加载磁盘上的 `JavaRuntime`。
     ///
-    /// - Parameter url: 运行时的 `URL`，包含 `Home` 目录即可。
+    /// - Parameter url: 运行时的 `URL`，位于 Java 主目录内即可（如 `bin/java`）。
     public static func load(from url: URL) throws -> JavaRuntime {
+        // 逐级向上寻找含 release 文件的主目录，以兼容 macOS 的 .jdk 包与 SDKMAN 等工具直接解压的 Java 目录
         var url: URL = url
-        while url.path != "/" {
-            if url.lastPathComponent == "Home" && url.deletingLastPathComponent().lastPathComponent == "Contents" {
-                break
+        while !isJavaHome(url) {
+            if url.path == "/" {
+                throw JavaError.invalidURL
             }
             url = url.deletingLastPathComponent()
-        }
-        if url.path == "/" {
-            throw JavaError.invalidURL
         }
         let homeDirectory: URL = url
         // 解析 release 文件
@@ -71,14 +83,13 @@ public enum JavaSearcher {
         var type: JavaRuntime.JavaType?
         var executableURL: URL?
         var architecture: Architecture?
-        for (javaType, path) in [
-            (JavaRuntime.JavaType.jdk, "bin/java"),
-            (JavaRuntime.JavaType.jre, "jre/bin/java")
-        ] {
+        for path in ["bin/java", "jre/bin/java"] {
             let url: URL = homeDirectory.appending(path: path)
             let arch: Architecture = .architecture(of: url)
             if arch != .unknown {
-                type = javaType
+                // 只有 JDK 才自带 javac
+                let javacURL: URL = url.deletingLastPathComponent().appending(path: "javac")
+                type = FileManager.default.fileExists(atPath: javacURL.path) ? .jdk : .jre
                 executableURL = url
                 architecture = arch
                 break
@@ -111,25 +122,42 @@ public enum JavaSearcher {
         return nil
     }
     
-    private static func findJavaBundles() throws -> [URL] {
-        var bundleDirectories: [URL] = []
-        
-        for directory in javaDirectories where FileManager.default.fileExists(atPath: directory.path) {
-            bundleDirectories.append(contentsOf: try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil))
+    private static func findJavaHomes() -> [URL] {
+        var homeDirectories: [URL] = javaDirectories.flatMap { contents(of: $0).compactMap(javaHome(at:)) }
+        homeDirectories += homebrewDirectories.flatMap {
+            contents(of: $0)
+                .filter { $0.lastPathComponent.starts(with: "openjdk") }
+                .compactMap(javaHome(at:))
         }
-        // Homebrew
-        let homebrewRoot: URL = .init(fileURLWithPath: "/opt/homebrew/opt")
-        if FileManager.default.fileExists(atPath: homebrewRoot.path) {
-            do {
-                let homebrewDirectories: [URL] = try FileManager.default.contentsOfDirectory(at: homebrewRoot, includingPropertiesForKeys: nil)
-                    .filter { $0.lastPathComponent.starts(with: "openjdk@") }
-                for directory in homebrewDirectories {
-                    bundleDirectories.append(directory.appending(path: "libexec").appending(path: "openjdk.jdk"))
-                }
-            } catch {
-                err("搜索 Homebrew 目录失败：\(error.localizedDescription)")
-            }
+        // SDKMAN 的 current、jEnv 的软链接等会指向同一个 Java，按真实路径去重
+        var visited: Set<String> = []
+        return homeDirectories.filter { visited.insert($0.resolvingSymlinksInPath().path).inserted }
+    }
+
+    /// 解析一个可能的 Java 安装目录，兼容 macOS 的 `.jdk` 包、Homebrew 与直接解压的 Java 目录。
+    /// - Returns: Java 主目录，若该目录不是 Java 安装目录则返回 `nil`。
+    private static func javaHome(at url: URL) -> URL? {
+        [
+            url,                                            // SDKMAN、asdf、mise 等直接解压的目录
+            url.appending(path: "Contents/Home"),           // macOS 的 .jdk / .bundle 包
+            url.appending(path: "libexec/openjdk.jdk/Contents/Home") // Homebrew
+        ].first(where: isJavaHome)
+    }
+
+    /// 判断目录是否为 Java 主目录。
+    private static func isJavaHome(_ url: URL) -> Bool {
+        FileManager.default.fileExists(atPath: url.appending(path: "release").path)
+    }
+
+    private static func contents(of directory: URL) -> [URL] {
+        // 大部分用户不会装全这些工具，目录不存在是常态
+        guard FileManager.default.fileExists(atPath: directory.path) else { return [] }
+        do {
+            return try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+                .sorted { $0.path < $1.path }
+        } catch {
+            err("搜索 \(directory.path) 失败：\(error.localizedDescription)")
+            return []
         }
-        return bundleDirectories.filter { FileManager.default.fileExists(atPath: $0.appending(path: "Contents/Home/release").path) }
     }
 }

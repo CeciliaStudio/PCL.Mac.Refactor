@@ -12,6 +12,7 @@ import Core
 class InstanceConfigViewModel: ObservableObject {
     @Published public var instance: MinecraftInstance
     @Published public var jvmHeapSize: String = ""
+    @Published public var jvmArguments: String = ""
     @Published public var javaDescription: String = "无"
     
     public var description: String {
@@ -36,6 +37,7 @@ class InstanceConfigViewModel: ObservableObject {
         self.id = id
         self.instance = instanceManager.currentRepository.instance(named: id)! // TODO: 改为安全解包
         self.jvmHeapSize = instance.config.jvmHeapSize.description
+        self.jvmArguments = instance.config.jvmArguments.joinedToArgumentLine()
         do {
             self.javaDescription = try instance.config.javaURL.map(JavaSearcher.load(from:))?.description ?? "无"
         } catch {}
@@ -52,7 +54,13 @@ class InstanceConfigViewModel: ObservableObject {
         instance.config.jvmHeapSize = heapSize
         instance.markDirty()
     }
-    
+
+    @MainActor
+    public func setJvmArguments(_ arguments: String) {
+        instance.config.jvmArguments = arguments.splitToArguments()
+        instance.markDirty()
+    }
+
     @MainActor
     public func switchJava(to runtime: JavaRuntime) throws {
         if runtime.majorVersion < instance.manifest.javaVersion.majorVersion {

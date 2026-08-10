@@ -45,8 +45,22 @@ public class MinecraftInstance: Hashable, Identifiable, Equatable {
     public struct Config: Codable {
         public var jvmHeapSize: UInt64
         public var javaURL: URL?
-        
+        public var jvmArguments: [String]
+
         public static let `default`: Config = .init(jvmHeapSize: 4096, javaURL: nil)
+
+        public init(jvmHeapSize: UInt64, javaURL: URL?, jvmArguments: [String] = []) {
+            self.jvmHeapSize = jvmHeapSize
+            self.javaURL = javaURL
+            self.jvmArguments = jvmArguments
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.jvmHeapSize = try container.decode(UInt64.self, forKey: .jvmHeapSize)
+            self.javaURL = try container.decodeIfPresent(URL.self, forKey: .javaURL)
+            self.jvmArguments = try container.decodeIfPresent([String].self, forKey: .jvmArguments) ?? []
+        }
     }
 }
 

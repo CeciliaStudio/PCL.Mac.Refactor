@@ -54,6 +54,7 @@ public class MinecraftLauncher {
         var arguments: [String] = []
         arguments.append("-Xmx\(options.memory)m")
         arguments.append(contentsOf: manifest.jvmArguments.flatMap { $0.rules.allSatisfy { $0.test(with: options) } ? $0.value : [] })
+        arguments.append(contentsOf: options.extraJvmArguments)
         if let authlibInjectorPath = options.authlibInjectorPath,
            let authServerURL = options.authServerURL,
            let prefetchedMeta = options.prefetchedMeta {

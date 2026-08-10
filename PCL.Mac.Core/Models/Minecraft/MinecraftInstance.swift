@@ -45,7 +45,7 @@ public class MinecraftInstance: Hashable, Identifiable, Equatable {
     public struct Config: Codable {
         public var jvmHeapSize: UInt64
         public var javaURL: URL?
-        public var jvmArguments: String?
+        public var jvmArguments: [String] = ""
 
         public static let `default`: Config = .init(jvmHeapSize: 4096, javaURL: nil)
     }

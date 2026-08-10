@@ -10,10 +10,16 @@ public extension String {
     func splitToArguments() -> [String] {
         var arguments: [String] = []
         var current: String?
-        var quote: Character?
+        var escaping = false
 
         for character in self {
-            if character == quote {
+            if escaping {
+                current = (current ?? "") + String(character)
+                escaping = false
+            } else if character == "\\", quote != "'" {
+                escaping = true
+                current = current ?? ""
+            } else if character == quote {
                 quote = nil
             } else if quote == nil, character == "\"" || character == "'" {
                 quote = character
@@ -25,6 +31,7 @@ public extension String {
                 current = (current ?? "") + String(character)
             }
         }
+        if escaping { current = (current ?? "") + "\\" }
         if let current { arguments.append(current) }
         return arguments
     }

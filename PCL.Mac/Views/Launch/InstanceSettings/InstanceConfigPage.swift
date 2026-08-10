@@ -72,8 +72,8 @@ struct InstanceConfigPage: View {
                     }
                 MyText("MB")
             }
-            configLine(label: "JVM 参数") {
-                MyTextField(text: $viewModel.jvmArguments, placeholder: "例如 -XX:+UseG1GC -Dfile.encoding=UTF-8")
+            configLine(label: "额外 JVM 参数") {
+                MyTextField(text: $viewModel.jvmArguments, placeholder: "例如 -XX:+UseG1GC -Dfile.encoding=UTF-8，将被追加至原本 JVM 参数后")
                     .onChange(of: viewModel.jvmArguments) { newValue in
                         viewModel.setJvmArguments(newValue)
                     }

@@ -57,6 +57,10 @@ enum CapeSelection {
                 try await service.activateCape(cape, accessToken: microsoftAccount.accessToken)
                 hint("披风更换成功！", type: .finish)
             } catch let error where error.isCancellationError {
+            } catch let error as MicrosoftAuthService.Error where error == .invalidGrant {
+                // refresh token 已过期，需要重新登录才能继续操作
+                err("更换披风失败：\(error.localizedDescription)")
+                hint("更换披风失败：正版账户登录状态已失效，请重新登录正版账户后再试。", type: .critical)
             } catch {
                 err("更换披风失败：\(error.localizedDescription)")
                 hint("更换披风失败：\(error.localizedDescription)", type: .critical)

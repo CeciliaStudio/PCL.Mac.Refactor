@@ -192,6 +192,13 @@ class AccountViewModel: ObservableObject {
                         "看起来你还没有购买 Minecraft。\n如果你已购买 Minecraft，请点击下方的“确定”按钮，创建档案后再次尝试登录。",
                         "https://www.minecraft.net/msaprofile/mygames/editprofile"
                     )
+                case .invalidGrant:
+                    // 登录流程中不应出现此错误，仅为满足 exhaustive switch
+                    MessageBoxManager.shared.showText(
+                        title: "添加正版账号失败",
+                        content: "正版账户登录状态已失效，请重试。",
+                        level: .error
+                    )
                 }
             } catch {
                 MessageBoxManager.shared.showText(

@@ -160,6 +160,16 @@ public enum MinecraftLaunchTask {
                 try await model.account.refresh()
                 log("刷新 accessToken 成功")
             } catch let error where error.isCancellationError {
+            } catch let error as MicrosoftAuthService.Error where error == .invalidGrant {
+                // refresh token 已过期，旧 accessToken 也不会有效，必须重新登录
+                err("刷新 accessToken 失败：\(error.localizedDescription)")
+                _ = await MessageBoxManager.shared.showTextAsync(
+                    title: "正版账户登录状态已失效",
+                    content: "正版账户的登录状态已过期，需要重新登录才能继续。\n\n请在设置页面中删除当前的正版账户并重新添加。",
+                    level: .error,
+                    .yes(label: "知道了")
+                )
+                try task.cancel()
             } catch {
                 err("刷新 accessToken 失败：\(error.localizedDescription)")
                 if await MessageBoxManager.shared.showTextAsync(

@@ -118,11 +118,34 @@ public class MicrosoftAuthService {
         public let refreshToken: String
     }
     
-    public enum Error: Swift.Error {
+    /// Microsoft 认证过程中可能发生的错误。
+    ///
+    /// 实现了 `LocalizedError`，使 `error.localizedDescription` 在所有调用方
+    /// 都能返回有意义的中文描述，而不是默认的 "Core.MicrosoftAuthService.Error 错误 1"。
+    /// 新增 `invalidGrant` 用于区分 refresh token 过期（需重新登录）与临时故障。
+    public enum Error: Swift.Error, LocalizedError, Equatable {
         case xboxAuthenticationFailed(code: UInt32)
         case apiError(description: String)
         case internalError
         case notPurchased
+        /// OAuth refresh token 已过期或被吊销，必须重新走完整登录流程。
+        /// 微软返回的 error 字段为 `"invalid_grant"`（AADSTS70000 等）。
+        case invalidGrant
+        
+        public var errorDescription: String? {
+            switch self {
+            case .xboxAuthenticationFailed(let code):
+                "Xbox Live 验证失败（错误代码：\(code)）"
+            case .apiError(let description):
+                description
+            case .internalError:
+                "发生内部错误"
+            case .notPurchased:
+                "当前微软账户未购买 Minecraft"
+            case .invalidGrant:
+                "正版账户登录状态已失效，需要重新登录"
+            }
+        }
     }
     
     
@@ -141,6 +164,14 @@ public class MicrosoftAuthService {
                 return json
             }
             
+            // refresh token 过期或被吊销时，微软返回 error="invalid_grant"（AADSTS70000 等），
+            // 需要单独区分以便上层引导用户重新登录，而非当作普通 API 错误处理。
+            if error == "invalid_grant" {
+                let description: String = json["error_description"].string ?? json["errorMessage"].stringValue
+                err("refresh token 已失效：\(description)")
+                throw Error.invalidGrant
+            }
+
             let description: String = json["error_description"].string ?? json["errorMessage"].stringValue
             err("调用 API 失败：\(response.statusCode) \(error)，错误描述：\(description)")
             throw Error.apiError(description: description)

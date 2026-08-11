@@ -45,11 +45,18 @@ class MinecraftLaunchManager: ObservableObject {
         self.loadingViewModel.text = "正在启动游戏"
         let task: MyTask<MinecraftLaunchTask.Model> = MinecraftLaunchTask.create(for: instance, using: account, in: repository) { launcher, process in
             self.gameProcess = process
+            let launchDate: Date = .init()
             process.terminationHandler = { [weak self] process in
                 log("游戏进程已退出，退出代码：\(process.terminationStatus)")
                 if ![0, 9, 15, 128 + 9, 128 + 15].contains(process.terminationStatus) {
                     log("游戏非正常退出")
-                    self?.onGameCrash(instance: instance, options: launcher.options, logURL: launcher.logURL)
+                    self?.onGameCrash(
+                        instance: instance,
+                        options: launcher.options,
+                        logURL: launcher.logURL,
+                        exitCode: process.terminationStatus,
+                        launchDate: launchDate
+                    )
                 } else {
                     try? FileManager.default.removeItem(at: launcher.logURL)
                 }
@@ -85,11 +92,51 @@ class MinecraftLaunchManager: ObservableObject {
         }
     }
     
-    private func onGameCrash(instance: MinecraftInstance, options: LaunchOptions, logURL: URL) {
+    private func onGameCrash(instance: MinecraftInstance, options: LaunchOptions, logURL: URL, exitCode: Int32, launchDate: Date) {
         hint("检测到 Minecraft 发生崩溃，崩溃分析已开始……", type: .critical)
+        DispatchQueue.global(qos: .userInitiated).async {
+            let context: CrashContext = CrashAnalyzer.loadContext(
+                logURL: logURL,
+                runningDirectory: options.runningDirectory,
+                exitCode: exitCode,
+                options: options,
+                since: launchDate
+            )
+            let results: [CrashAnalysisResult] = CrashAnalyzer.analyze(context)
+            if results.isEmpty {
+                log("崩溃分析完成，未命中任何规则")
+            } else {
+                log("崩溃分析完成，命中规则：\(results.map(\.ruleID).joined(separator: "、"))")
+            }
+            self.showCrashMessageBox(for: instance, options: options, logURL: logURL, results: results)
+        }
+    }
+
+    /// 展示崩溃分析结果模态框。
+    /// - Parameters:
+    ///   - instance: 崩溃的游戏实例。
+    ///   - options: 启动游戏使用的选项。
+    ///   - logURL: 游戏输出日志文件 URL。
+    ///   - results: 崩溃分析结果。为空时展示未能分析出原因的提示。
+    private func showCrashMessageBox(for instance: MinecraftInstance, options: LaunchOptions, logURL: URL, results: [CrashAnalysisResult]) {
+        var content: String = "你的游戏发生了一些问题，无法继续运行。\n"
+        if results.isEmpty {
+            content += "很抱歉，PCL.Mac 未能分析出崩溃原因……\n"
+        } else {
+            for result in results {
+                content += "\n\(result.level == .certain ? "检测到" : "可能与此有关")：\(result.detected)\n"
+                if let suggestion = result.suggestion {
+                    content += "建议：\(suggestion)\n"
+                }
+                if !result.evidence.isEmpty {
+                    content += "判断依据：\n" + result.evidence.map { "> \($0)" }.joined(separator: "\n") + "\n"
+                }
+            }
+        }
+        content += "\n若要寻求帮助，请点击“导出崩溃报告”并将导出的文件发给他人，而不是发送关于此页面的图片！！！"
         MessageBoxManager.shared.showText(
             title: "Minecraft 发生崩溃",
-            content: "你的游戏发生了一些问题，无法继续运行。\n很抱歉，PCL.Mac 暂时没有崩溃分析功能……\n\n若要寻求帮助，请点击“导出崩溃报告”并将导出的文件发给他人，而不是发送关于此页面的图片！！！",
+            content: content,
             level: .error,
             .no(label: "返回"),
             .yes(label: "导出崩溃报告")

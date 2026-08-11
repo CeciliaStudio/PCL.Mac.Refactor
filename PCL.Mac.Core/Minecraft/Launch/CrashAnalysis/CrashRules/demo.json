@@ -1,0 +1,20 @@
+{
+    "schema": 1,
+    "id": "demo.template",
+    "version": 1,
+    "author": "YuanMu",
+    "level": "harmless",
+    "priority": -100,
+    "match": {
+        "all": [
+            { "contains": "PCL.Mac.CrashRuleDemo", "in": ["gameLog"] },
+            { "regex": "PCL\\.Mac\\.CrashRuleDemo: code (\\d+)", "capture": "code" },
+            { "not": { "contains": "PCL.Mac.CrashRuleDemo.Ignored" } }
+        ]
+    },
+    "script": "function match(context) { var code = Number(context.captures.code); if (code < 100) { return null; } return { suggestion: '示例规则的建议由脚本生成，代码 ' + code + ' 不小于 100' }; }",
+    "output": {
+        "detected": "示例规则命中，捕获到代码 {capture.code}，当前 Java {java.major}",
+        "suggestion": "该建议会被脚本返回值覆盖"
+    }
+}

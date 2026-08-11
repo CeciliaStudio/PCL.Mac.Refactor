@@ -8,7 +8,7 @@
 import Foundation
 
 public class MinecraftLauncher {
-    private static let gameLogQueue: DispatchQueue = .init(label: "PCL.Mac.GameLog")
+    private static let gameLogQueue: DispatchQueue = .init(label: "PCL.Mac.GameLog", attributes: .concurrent)
     public let options: LaunchOptions
     public let logURL: URL
     private let manifest: ClientManifest
@@ -84,7 +84,8 @@ public class MinecraftLauncher {
             }
             defer { try? handle?.close() }
             
-            while process.isRunning {
+            // 以免游戏进程在极短时间内退出时漏掉全部输出。
+            while true {
                 let data: Data = pipe.fileHandleForReading.availableData
                 if data.isEmpty { break }
                 try? handle?.write(contentsOf: data)

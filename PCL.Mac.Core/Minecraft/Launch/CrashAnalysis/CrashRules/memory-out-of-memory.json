@@ -1,0 +1,13 @@
+{
+    "schema": 1,
+    "id": "memory.out-of-memory",
+    "version": 1,
+    "author": "YuanMu",
+    "level": "certain",
+    "priority": 50,
+    "match": { "contains": "java.lang.OutOfMemoryError: Java heap space" },
+    "output": {
+        "detected": "游戏运行时堆内存耗尽，当前为该实例分配了 {memory} MB。",
+        "suggestion": "请在实例设置中调大内存分配后重新启动。"
+    }
+}

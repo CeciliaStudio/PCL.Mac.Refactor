@@ -183,9 +183,11 @@ struct LaunchSidebar: Sidebar {
             .buttonStyle(.plain)
             .help("更换披风")
 
-            Button {
-                accountVM.currentPanel = .accountList
-            } label: {
+Button {
+    isAvatarHovered = false
+    isToolbarHovered = false
+    accountVM.currentPanel = .accountList
+} label: {
                 Image(systemName: "arrow.left.arrow.right")
                     .resizable()
                     .scaledToFit()

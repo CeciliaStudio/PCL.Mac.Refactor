@@ -9,15 +9,18 @@ import Foundation
 
 /// Minecraft Services API 的玩家档案接口。
 public final class MinecraftProfileService {
-    public static let shared: MinecraftProfileService = .init()
+    private let accessToken: String
 
-    private static let profileURL: URL = .init(string: "https://api.minecraftservices.com/minecraft/profile")!
-    private static let activeCapeURL: URL = .init(string: "https://api.minecraftservices.com/minecraft/profile/capes/active")!
+    private static let rootURL = URL(string: "https://api.minecraftservices.com/")!
+    private static let profileURL = rootURL.appending(path: "/minecraft/profile")
+    private static let activeCapeURL = rootURL.appending(path: "/minecraft/profile/capes/active")
 
-    private init() {}
+    public init(accessToken: String) {
+        self.accessToken = accessToken
+    }
 
     /// 获取正版账号当前可用的披风列表。
-    public func fetchCapes(accessToken: String) async throws -> [MinecraftCape] {
+    public func fetchCapes() async throws -> [MinecraftCape] {
         let response = try await HTTPClient.shared.get(
             Self.profileURL,
             headers: ["Authorization": "Bearer \(accessToken)"],
@@ -27,7 +30,7 @@ public final class MinecraftProfileService {
     }
 
     /// 将指定披风设置为当前使用的披风。
-    public func activateCape(_ cape: MinecraftCape, accessToken: String) async throws {
+    public func activateCape(_ cape: MinecraftCape) async throws {
         _ = try await HTTPClient.shared.request(
             url: Self.activeCapeURL,
             method: "PUT",

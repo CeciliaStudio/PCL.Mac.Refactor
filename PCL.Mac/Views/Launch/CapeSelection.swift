@@ -9,24 +9,23 @@ import Foundation
 import Core
 
 enum CapeSelection {
-    private static let service: MinecraftProfileService = .shared
     private static let thumbnailCropRect = CGRect(x: 1, y: 1, width: 10, height: 16)
 
     static func request(for account: Account) {
         guard let microsoftAccount = account as? MicrosoftAccount else {
-            hint("只有正版账号支持更换披风。", type: .info)
+            hint("只有正版账号支持更换披风！", type: .critical)
             return
         }
 
         Task { @MainActor in
             do {
-                let account: Account = microsoftAccount
                 hint("正在获取披风列表……")
-                if try await account.shouldRefresh() {
-                    try await account.refresh()
+                if microsoftAccount.shouldRefresh() {
+                    try await microsoftAccount.refresh()
                 }
 
-                let capes = try await service.fetchCapes(accessToken: microsoftAccount.accessToken)
+                let service = MinecraftProfileService(accessToken: microsoftAccount.accessToken)
+                let capes = try await service.fetchCapes()
                 guard !capes.isEmpty else {
                     hint("当前账号没有可用的披风。", type: .info)
                     return
@@ -50,11 +49,11 @@ enum CapeSelection {
 
                 let cape = capes[index]
                 guard !cape.isActive else {
-                    hint("这件披风已经在使用中。", type: .info)
+                    hint("这件披风已经在使用中!", type: .critical)
                     return
                 }
 
-                try await service.activateCape(cape, accessToken: microsoftAccount.accessToken)
+                try await service.activateCape(cape)
                 hint("披风更换成功！", type: .finish)
             } catch let error where error.isCancellationError {
             } catch {

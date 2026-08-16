@@ -108,18 +108,18 @@ struct LaunchSidebar: Sidebar {
 
     private func normalPanel(_ account: Account) -> some View {
         ZStack(alignment: .bottom) {
-            MyListItem({ _ in
-                VStack(spacing: 15) {
-                    PlayerAvatar(account)
-                    VStack(spacing: 4) {
-                        MyText(account.profile.name, size: 16)
-                        MyText(account.localizedTypeName, size: 12, color: .colorGray4)
-                    }
+            VStack(spacing: 15) {
+                PlayerAvatar(account)
+                VStack(spacing: 4) {
+                    MyText(account.profile.name, size: 16)
+                    MyText(account.localizedTypeName, size: 12, color: .colorGray4)
                 }
-                .onHover { hovering in
-                    setAvatarHovered(hovering)
-                }
-            }, showsHoverBackground: false)
+            }
+            .padding(4)
+            .contentShape(Rectangle())
+            .onHover { hovering in
+                setAvatarHovered(hovering)
+            }
             .fixedSize()
 
             if isAvatarHovered {
@@ -184,8 +184,6 @@ struct LaunchSidebar: Sidebar {
             .help("更换披风")
 
 Button {
-    isAvatarHovered = false
-    isToolbarHovered = false
     accountVM.currentPanel = .accountList
 } label: {
                 Image(systemName: "arrow.left.arrow.right")

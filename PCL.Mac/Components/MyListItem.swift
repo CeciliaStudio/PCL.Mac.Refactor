@@ -11,15 +11,13 @@ struct MyListItem<Content: View>: View {
     @State private var hovered: Bool = false
     @State private var backgroundScale: CGFloat = 0.92
     private let content: (Bool) -> Content
-    private let showsHoverBackground: Bool
     
-    init(_ content: @escaping (Bool) -> Content, showsHoverBackground: Bool = true) {
+    init(_ content: @escaping (Bool) -> Content) {
         self.content = content
-        self.showsHoverBackground = showsHoverBackground
     }
     
-    init(_ content: @escaping () -> Content, showsHoverBackground: Bool = true) {
-        self.init({ _ in content() }, showsHoverBackground: showsHoverBackground)
+    init(_ content: @escaping () -> Content) {
+        self.init({ _ in content() })
     }
     
     init(_ model: ListItem, selected: Bool = false) where Content == AnyView {
@@ -61,7 +59,7 @@ struct MyListItem<Content: View>: View {
             .contentShape(Rectangle())
             .background {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(showsHoverBackground && hovered ? Color.color2.opacity(0.1) : .clear)
+                    .fill(hovered ? Color.color2.opacity(0.1) : .clear)
                     .scaleEffect(backgroundScale)
                     .allowsHitTesting(false)
             }

@@ -74,7 +74,7 @@ class ResourceInstallViewModel: ObservableObject {
                     datePublished: ProjectListItemModel.formatLastUpdate(version.datePublished),
                     requiredDependencies: dependencies,
                     type: version.type,
-                    primaryFile: version.files.filter(\.primary).first,
+                    primaryFile: version.files.filter(\.primary).first ?? version.files.first,
                     gameVersion: key.version.id,
                     loader: key.loader
                 )

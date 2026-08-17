@@ -111,6 +111,9 @@ struct LaunchSidebar: Sidebar {
                 }
             }
             .padding(4)
+            .onTapGesture {
+                accountVM.currentPanel = .accountList
+            }
             
             VStack {
                 Spacer()

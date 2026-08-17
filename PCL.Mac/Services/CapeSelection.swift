@@ -27,7 +27,7 @@ enum CapeSelection {
                 let service = MinecraftProfileService(accessToken: microsoftAccount.accessToken)
                 let capes = try await service.fetchCapes()
                 guard !capes.isEmpty else {
-                    hint("当前账号没有可用的披风。", type: .info)
+                    hint("当前账号没有可用的披风！", type: .info)
                     return
                 }
 

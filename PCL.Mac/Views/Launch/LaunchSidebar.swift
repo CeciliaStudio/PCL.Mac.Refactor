@@ -14,13 +14,8 @@ struct LaunchSidebar: Sidebar {
     @StateObject private var launchVM: LaunchViewModel = .init()
     @State private var addingYggdrasilAccount: Bool = false
 
-    @State private var isAvatarHovered: Bool = false
-    @State private var isToolbarHovered: Bool = false
-    @State private var avatarHoverHideWorkItem: DispatchWorkItem?
-
-    private let avatarHoverHorizontalExpansion: CGFloat = 40
-    private let avatarHoverVerticalExpansion: CGFloat = 40
-    private let toolbarVerticalOffset: CGFloat = 50
+    @State private var showToolbar: Bool = false
+    @State private var toolbarHovered: Bool = false
 
     init(instanceManager: InstanceManager) {
         self._instanceVM = StateObject(wrappedValue: InstanceViewModel(instanceManager: instanceManager))
@@ -107,7 +102,7 @@ struct LaunchSidebar: Sidebar {
     }
 
     private func normalPanel(_ account: Account) -> some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             VStack(spacing: 15) {
                 PlayerAvatar(account)
                 VStack(spacing: 4) {
@@ -116,108 +111,63 @@ struct LaunchSidebar: Sidebar {
                 }
             }
             .padding(4)
-            .contentShape(Rectangle())
-            .onHover { hovering in
-                setAvatarHovered(hovering)
-            }
-            .fixedSize()
-
-            if isAvatarHovered {
+            
+            VStack {
+                Spacer()
+                    .frame(height: 160)
                 toolbarView
-                    .fixedSize()
-                    .offset(y: toolbarVerticalOffset)
-                    .zIndex(1)
+                    .opacity(showToolbar ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.2), value: showToolbar)
             }
         }
-        .fixedSize()
-        .background {
-            GeometryReader { proxy in
-                Color.clear
-                    .frame(
-                        width: proxy.size.width + avatarHoverHorizontalExpansion * 2,
-                        height: proxy.size.height + avatarHoverVerticalExpansion * 2
-                    )
-                    .contentShape(Rectangle())
-                    .onHover { hovering in
-                        setAvatarHovered(hovering)
-                    }
-                    .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
-            }
-        }
-        .onHover { hovering in
-            setAvatarHovered(hovering)
-        }
-        .zIndex(isAvatarHovered ? 1 : 0)
-    }
-
-    private func setAvatarHovered(_ hovering: Bool) {
-        avatarHoverHideWorkItem?.cancel()
-
-        guard !hovering else {
-            isAvatarHovered = true
-            return
-        }
-
-        // 留出一点时间让指针从头像卡片移动到工具栏，避免工具栏提前消失。
-        let workItem = DispatchWorkItem {
-            isAvatarHovered = false
-        }
-        avatarHoverHideWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: workItem)
+        .contentShape(.rect)
+        .onHover { showToolbar = $0 }
     }
 
     private var toolbarView: some View {
         HStack(spacing: 16) {
-            Button {
-                guard let account = accountVM.currentAccount else {
-                    hint("请先选择一个账号！", type: .critical)
-                    return
+            Image(systemName: "tshirt.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 18)
+                .contentShape(.rect)
+                .onTapGesture {
+                    guard let account = accountVM.currentAccount else {
+                        hint("请先选择一个账号！", type: .critical)
+                        return
+                    }
+                    CapeSelection.request(for: account)
                 }
-                CapeSelection.request(for: account)
-            } label: {
-                Image(systemName: "tshirt.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 18, height: 18)
-            }
-            .buttonStyle(.plain)
-            .help("更换披风")
-
-Button {
-    accountVM.currentPanel = .accountList
-} label: {
-                Image(systemName: "arrow.left.arrow.right")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 18, height: 18)
-            }
-            .buttonStyle(.plain)
-            .help("选择档案")
+            
+            Image(systemName: "arrow.left.arrow.right")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16)
+                .contentShape(.rect)
+                .onTapGesture {
+                    accountVM.currentPanel = .accountList
+                }
         }
+        .foregroundStyle(Color.color3)
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
-        .foregroundStyle(Color.color3)
         .background {
             RoundedRectangle(cornerRadius: 8)
-                .fill(.regularMaterial)
+                .fill(Color.colorGray8)
                 .shadow(
-                    color: isToolbarHovered ? .color3.opacity(0.6) : .black.opacity(0.15),
-                    radius: isToolbarHovered ? 6 : 8,
-                    y: isToolbarHovered ? 0 : 3
+                    color: toolbarHovered ? .color3.opacity(0.6) : .black.opacity(0.15),
+                    radius: toolbarHovered ? 6 : 8
                 )
         }
         .overlay {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(
-                    isToolbarHovered ? Color.color3.opacity(0.45) : Color.colorGray2.opacity(0.35),
-                    lineWidth: isToolbarHovered ? 1.2 : 1
+                    toolbarHovered ? Color.color3.opacity(0.45) : Color.colorGray2.opacity(0.35),
+                    lineWidth: 1
                 )
         }
-        .animation(.easeInOut(duration: 0.2), value: isToolbarHovered)
-        .onHover { hovering in
-            isToolbarHovered = hovering
-            setAvatarHovered(hovering)
-        }
+        .animation(.easeInOut(duration: 0.2), value: toolbarHovered)
+        .onHover { toolbarHovered = $0 }
     }
 
     private var accountListPanel: some View {

@@ -8,10 +8,9 @@
 import SwiftUI
 import Core
 
-fileprivate let isMacOS26: Bool = ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 26
-fileprivate let isMacOS14OrLater: Bool = ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 14
+fileprivate let osMajorVersion = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
 
-class AppWindow: NSWindow {
+class AppWindow: NSWindow, NSWindowDelegate {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
     
@@ -24,22 +23,29 @@ class AppWindow: NSWindow {
         self.titleVisibility = .hidden
         self.titlebarAppearsTransparent = true
         
+        self.standardWindowButton(.zoomButton)?.isHidden = true
+        
         self.contentView = NSHostingView(rootView: RootView(instanceManager: instanceManager))
+        self.delegate = self
         
         self.setFrameAutosaveName("AppWindow")
         self.center()
     }
     
-    override func layoutIfNeeded() {
-        super.layoutIfNeeded()
-        if let close = self.standardWindowButton(.closeButton),
-           let min = self.standardWindowButton(.miniaturizeButton),
-           let zoom = self.standardWindowButton(.zoomButton) {
-            if isMacOS14OrLater {
-                close.frame.origin = CGPoint(x: isMacOS26 ? 18 : 16, y: isMacOS26 ? 0 : -4)
-                min.frame.origin = CGPoint(x: close.frame.maxX + (isMacOS26 ? 8 : 6), y: close.frame.minY)
-            }
-            zoom.frame.origin = CGPoint(x: 64, y: 64)
+    func windowDidUpdate(_ notification: Notification) {
+        guard osMajorVersion >= 14 else { return }
+        
+        guard let close = standardWindowButton(.closeButton),
+              let titlebarView = close.superview else {
+            return
         }
+        
+        let offset = osMajorVersion >= 26 ? 9 : 11
+        let origin = CGPoint(x: offset, y: -offset)
+        guard titlebarView.frame.origin != origin else {
+            return
+        }
+        
+        titlebarView.frame.origin = origin
     }
 }

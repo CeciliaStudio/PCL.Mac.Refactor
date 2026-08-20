@@ -6,3 +6,5 @@ __MACOSX/
 # Xcode
 PCL.Mac.xcodeproj/xcuserdata/
 PCL.Mac.xcodeproj/project.xcworkspace/xcuserdata/
+
+build.xcarchive

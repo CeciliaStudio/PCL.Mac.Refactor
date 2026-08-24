@@ -31,7 +31,7 @@ PCL.Mac 是 [Plain Craft Launcher](https://github.com/Meloong-Git/PCL)（由 [�
 |          |          最低           |    推荐     |
 |:--------:|:-----------------------:|:-----------:|
 | 普通使用 |       macOS 12.0        | macOS 14.0+ |
-|   开发   | macOS 14.5+ (Xcode 16+) |      —      |
+|   开发   | macOS 14.5 (Xcode 16) |      —      |
 
 同时支持 Intel 与 Apple 芯片。
 

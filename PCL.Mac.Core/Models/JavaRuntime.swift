@@ -20,6 +20,8 @@ public struct JavaRuntime: CustomStringConvertible, Equatable {
     public let implementor: String?
     /// `java` 可执行文件 URL。
     public let executableURL: URL
+    /// 是否为手动添加的 Java。
+    public let isCustom: Bool
     
     public enum JavaType: CustomStringConvertible {
         case jdk, jre

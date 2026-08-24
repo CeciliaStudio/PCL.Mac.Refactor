@@ -60,6 +60,7 @@ class LauncherConfig: Codable {
     public var downloadSourcePolicy: DownloadSourcePolicy = .officialFirst
     public var homepageType: HomepageType = .empty
     public var enabledFlags: Set<FeatureFlag>?
+    public var customJavaRuntimes: [URL] = []
     
     public init() {}
     
@@ -87,6 +88,7 @@ class LauncherConfig: Codable {
         self.downloadSourcePolicy = try container.decodeIfPresent(DownloadSourcePolicy.self, forKey: .downloadSourcePolicy) ?? .officialFirst
         self.homepageType = try container.decodeIfPresent(HomepageType.self, forKey: .homepageType) ?? .empty
         self.enabledFlags = try container.decodeIfPresent(Set<FeatureFlag>.self, forKey: .enabledFlags)
+        self.customJavaRuntimes = try container.decodeIfPresent([URL].self, forKey: .customJavaRuntimes) ?? []
     }
     
     public func encode(to encoder: any Encoder) throws {
@@ -105,10 +107,11 @@ class LauncherConfig: Codable {
         try container.encode(downloadSourcePolicy, forKey: .downloadSourcePolicy)
         try container.encode(homepageType, forKey: .homepageType)
         try container.encodeIfPresent(enabledFlags, forKey: .enabledFlags)
+        try container.encode(customJavaRuntimes, forKey: .customJavaRuntimes)
     }
     
     public static func save(_ config: LauncherConfig = .shared, to url: URL = URLConstants.configURL) throws {
-        let data: Data = try JSONEncoder.shared.encode(config)
+        let data = try JSONEncoder.shared.encode(config)
         try data.write(to: url)
     }
     
@@ -127,6 +130,7 @@ class LauncherConfig: Codable {
         case downloadSourcePolicy
         case homepageType
         case enabledFlags
+        case customJavaRuntimes
     }
     
     enum HomepageType: String, Codable, CustomStringConvertible {

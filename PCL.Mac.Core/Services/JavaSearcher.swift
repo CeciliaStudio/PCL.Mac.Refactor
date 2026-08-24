@@ -31,27 +31,33 @@ public enum JavaSearcher {
     ]
 
     /// 搜索当前环境中安装的 Java（不包含 `/usr/bin/java`）。
+    /// - Parameter customJavaRuntimes: 自定义 Java 列表。
     /// - Returns: 当前环境中安装的 Java 列表。
-    public static func search() throws -> [JavaRuntime] {
+    public static func search(customJavaRuntimes: [URL] = []) throws -> [JavaRuntime] {
         var runtimes: [JavaRuntime] = []
-        for homeDirectory in findJavaHomes() {
-            do {
-                let runtime: JavaRuntime = try load(from: homeDirectory)
-                runtimes.append(runtime)
-            } catch {
-                err("加载 Java 失败：\(error.localizedDescription)")
-                debug("homeDirectory：\(homeDirectory.path)")
+        var isCustom = false
+        for urls in [findJavaHomes(), customJavaRuntimes] {
+            for url in urls {
+                do {
+                    let runtime = try load(from: url, isCustom: isCustom)
+                    runtimes.append(runtime)
+                } catch {
+                    err("加载 Java 失败：\(error)")
+                    debug("url：\(url.path)")
+                }
             }
+            isCustom = true
         }
+        
         return runtimes
     }
     
-    /// 加载磁盘上的 `JavaRuntime`。
-    ///
-    /// - Parameter url: 运行时的 `URL`，位于 Java 主目录内即可（如 `bin/java`）。
-    public static func load(from url: URL) throws -> JavaRuntime {
-        // 逐级向上寻找含 release 文件的主目录，以兼容 macOS 的 .jdk 包与 SDKMAN 等工具直接解压的 Java 目录
-        var url: URL = url
+    /// 加载磁盘上的 Java 运行时。
+    /// - Parameters:
+    ///   - url: 运行时的 `URL`，位于 Java 主目录内即可（如 `bin/java`）。
+    ///   - isCustom: 是否为手动添加的 Java。
+    public static func load(from url: URL, isCustom: Bool = false) throws -> JavaRuntime {
+        var url = url
         while !isJavaHome(url) {
             if url.path == "/" {
                 throw JavaError.invalidURL
@@ -79,7 +85,7 @@ public enum JavaSearcher {
             implementor = release["IMPLEMENTOR"]
         }
         
-        // Java 类型判断
+        // 类型判断
         var type: JavaRuntime.JavaType?
         var executableURL: URL?
         var architecture: Architecture?
@@ -87,7 +93,6 @@ public enum JavaSearcher {
             let url: URL = homeDirectory.appending(path: path)
             let arch: Architecture = .architecture(of: url)
             if arch != .unknown {
-                // 只有 JDK 才自带 javac
                 let javacURL: URL = url.deletingLastPathComponent().appending(path: "javac")
                 type = FileManager.default.fileExists(atPath: javacURL.path) ? .jdk : .jre
                 executableURL = url
@@ -104,7 +109,8 @@ public enum JavaSearcher {
             type: type,
             architecture: architecture,
             implementor: implementor,
-            executableURL: executableURL
+            executableURL: executableURL,
+            isCustom: isCustom
         )
     }
     
@@ -129,7 +135,7 @@ public enum JavaSearcher {
                 .filter { $0.lastPathComponent.starts(with: "openjdk") }
                 .compactMap(javaHome(at:))
         }
-        // SDKMAN 的 current、jEnv 的软链接等会指向同一个 Java，按真实路径去重
+        
         var visited: Set<String> = []
         return homeDirectories.filter { visited.insert($0.resolvingSymlinksInPath().path).inserted }
     }
@@ -150,7 +156,6 @@ public enum JavaSearcher {
     }
 
     private static func contents(of directory: URL) -> [URL] {
-        // 大部分用户不会装全这些工具，目录不存在是常态
         guard FileManager.default.fileExists(atPath: directory.path) else { return [] }
         do {
             return try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)

@@ -178,6 +178,7 @@ public enum MinecraftLaunchTask {
     
     private static func precheck(task: SubTask, model: Model) async throws {
         model.options.manifest = model.manifest
+        model.options.mainClass = model.manifest.mainClass
         try model.options.validate()
         let entries: [LaunchPrecheck.Entry] = LaunchPrecheck.check(for: model.instance, with: model.options, hasMicrosoftAccount: LauncherConfig.shared.hasMicrosoftAccount)
         log("共 \(entries.count) 个问题：\(entries)")

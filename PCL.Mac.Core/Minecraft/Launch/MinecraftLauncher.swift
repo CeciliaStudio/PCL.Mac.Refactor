@@ -62,7 +62,7 @@ public class MinecraftLauncher {
             arguments.append("-Dauthlibinjector.yggdrasil.prefetched=\(prefetchedMeta)")
             log("已添加 Authlib Injector 参数")
         }
-        arguments.append(manifest.mainClass)
+        arguments.append(options.mainClass)
         arguments.append(contentsOf: manifest.gameArguments.flatMap { $0.rules.allSatisfy { $0.test(with: options) } ? $0.value : [] })
         arguments = arguments.map { $0.replacingPlaceholders(with: values) }
         process.arguments = arguments

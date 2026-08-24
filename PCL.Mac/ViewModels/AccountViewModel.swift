@@ -310,7 +310,7 @@ class AccountViewModel: ObservableObject {
     }
     
     private func requestAddOfflineAccount() async {
-        guard let playerName: String = await MessageBoxManager.shared.showInputAsync(title: "玩家名") else {
+        guard let playerName: String = await MessageBoxManager.shared.showInputAsync(title: "输入玩家名（只能包含字母、数字和下划线）") else {
             log("用户取消了添加")
             return
         }

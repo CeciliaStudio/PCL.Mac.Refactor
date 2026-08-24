@@ -33,6 +33,7 @@ public enum LaunchError: Error {
     case missingManifest
     case missingAccount
     case missingRepository
+    case missingMainClass
 }
 
 public enum TaskError: Error, Equatable {

@@ -22,8 +22,7 @@ public class ClientManifest: Decodable {
     public let javaVersion: JavaVersion
     public let libraries: [Library]
     public let logging: Logging
-    public let mainClass: String
-    public let type: String
+    public let mainClass: String?
     
     public let inheritsFrom: String?
     
@@ -31,7 +30,7 @@ public class ClientManifest: Decodable {
     public let version: String?
     
     private enum CodingKeys: String, CodingKey {
-        case arguments, assets, assetIndex, downloads, id, javaVersion, libraries, logging, mainClass, type
+        case arguments, assets, assetIndex, downloads, id, javaVersion, libraries, logging, mainClass
         case minecraftArguments
         case inheritsFrom
         case version
@@ -51,8 +50,7 @@ public class ClientManifest: Decodable {
         javaVersion: JavaVersion,
         libraries: [Library],
         logging: Logging,
-        mainClass: String,
-        type: String,
+        mainClass: String?,
         inheritsFrom: String?,
         version: String?
     ) {
@@ -66,7 +64,6 @@ public class ClientManifest: Decodable {
         self.libraries = libraries
         self.logging = logging
         self.mainClass = mainClass
-        self.type = type
         self.inheritsFrom = inheritsFrom
         self.version = version
     }
@@ -84,19 +81,23 @@ public class ClientManifest: Decodable {
                 "-Djna.tmpdir=${natives_directory}",
                 "-cp", "${classpath}"
             ].map { .init(value: [$0], rules: []) }
-        } else {
+        } else if container.contains(.arguments) {
             let argumentsContainer = try container.nestedContainer(keyedBy: ArgumentsCodingKeys.self, forKey: .arguments)
             self.gameArguments = try argumentsContainer.decodeIfPresent([Argument].self, forKey: .game) ?? []
             self.jvmArguments = try argumentsContainer.decodeIfPresent([Argument].self, forKey: .jvm) ?? []
+        } else {
+            self.gameArguments = []
+            self.jvmArguments = []
         }
+        
         self.assets = try container.decodeIfPresent(String.self, forKey: .assets)
         self.assetIndex = try container.decodeIfPresent(AssetIndex.self, forKey: .assetIndex)
         self.downloads = try container.decodeIfPresent(Downloads.self, forKey: .downloads)
-        let id = try container.decode(String.self, forKey: .id)
+        let id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString.lowercased()
         self.id = id
         self.javaVersion = try container.decodeIfPresent(JavaVersion.self, forKey: .javaVersion) ?? .init(component: "jre-legacy", majorVersion: 8)
         
-        let libraries = try container.decode([Library].self, forKey: .libraries)
+        let libraries = try container.decodeIfPresent([Library].self, forKey: .libraries) ?? []
         if Self.deduplicateLibraries {
             var librarySet: Set<HashableLibrary> = []
             self.libraries = libraries.lazy.reversed()
@@ -120,8 +121,7 @@ public class ClientManifest: Decodable {
                 sha1: "bd65e7d2e3c237be76cfbef4c2405033d7f91521"
             )
         )
-        self.mainClass = try container.decode(String.self, forKey: .mainClass)
-        self.type = try container.decode(String.self, forKey: .type)
+        self.mainClass = try container.decodeIfPresent(String.self, forKey: .mainClass)
         self.inheritsFrom = try container.decodeIfPresent(String.self, forKey: .inheritsFrom)
         self.version = try container.decodeIfPresent(String.self, forKey: .version)
     }
@@ -386,7 +386,7 @@ public class ClientManifest: Decodable {
     
     /// 创建一个新清单，继承本清单的所有属性，并使用指定的 libraries。
     public func setLibraries(to libraries: [Library]) -> ClientManifest {
-        return .init(gameArguments: gameArguments, jvmArguments: jvmArguments, assets: assets, assetIndex: assetIndex, downloads: downloads, id: id, javaVersion: javaVersion, libraries: libraries, logging: logging, mainClass: mainClass, type: type, inheritsFrom: inheritsFrom, version: version)
+        return .init(gameArguments: gameArguments, jvmArguments: jvmArguments, assets: assets, assetIndex: assetIndex, downloads: downloads, id: id, javaVersion: javaVersion, libraries: libraries, logging: logging, mainClass: mainClass, inheritsFrom: inheritsFrom, version: version)
     }
 }
 
@@ -411,8 +411,7 @@ public extension ClientManifest {
             javaVersion: baseManifest.javaVersion,
             libraries: libraries,
             logging: baseManifest.logging,
-            mainClass: mainClass,
-            type: baseManifest.type,
+            mainClass: mainClass ?? baseManifest.mainClass,
             inheritsFrom: nil,
             version: version
         )

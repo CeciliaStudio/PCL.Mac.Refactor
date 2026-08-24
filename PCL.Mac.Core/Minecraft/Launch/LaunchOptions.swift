@@ -15,6 +15,7 @@ public struct LaunchOptions {
     public var manifest: ClientManifest!
     public var repository: MinecraftRepository!
     public var memory: UInt64 = 4096
+    public var mainClass: String!
     public var extraJvmArguments: [String] = []
     public var demo: Bool = false
     
@@ -29,6 +30,7 @@ public struct LaunchOptions {
         if runningDirectory == nil { throw LaunchError.missingRunningDirectory }
         if manifest == nil { throw LaunchError.missingManifest }
         if repository == nil { throw LaunchError.missingRepository }
+        if mainClass == nil { throw LaunchError.missingMainClass}
     }
     
     public init() {}

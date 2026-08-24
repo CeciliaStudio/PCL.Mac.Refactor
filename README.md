@@ -8,7 +8,7 @@
 </div>
 <br>
 
-PCL.Mac 是 [Plain Craft Launcher](https://github.com/Meloong-Git/PCL)（由[龙腾猫跃](https://afdian.com/a/LTCat)制作的 Minecraft 启动器）的**非官方**重构版，使用 SwiftUI 框架**完全重构**了 PCL 以支持 macOS。
+PCL.Mac 是 [Plain Craft Launcher](https://github.com/Meloong-Git/PCL)（由 [龙腾猫跃](https://afdian.com/a/LTCat) 制作的 Minecraft 启动器）的**非官方**重构版，使用 SwiftUI 框架**完全重构**了 PCL 以支持 macOS。
 
 <table>
   <tr>

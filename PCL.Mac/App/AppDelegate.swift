@@ -72,6 +72,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         FlagsManager.shared = .init(enabledFlags: LauncherConfig.shared.enabledFlags)
         
+        JavaManager.shared = .init(customJavaRuntimes: LauncherConfig.shared.customJavaRuntimes)
+        
         executeAsyncTask("刷新地区信息", silent: true) {
             await DownloadSourceManager.shared.refreshRegion()
         }

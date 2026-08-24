@@ -39,7 +39,7 @@ class InstanceConfigViewModel: ObservableObject {
         self.jvmHeapSize = instance.config.jvmHeapSize.description
         self.jvmArguments = instance.config.jvmArguments.joinedToArgumentLine()
         do {
-            self.javaDescription = try instance.config.javaURL.map(JavaSearcher.load(from:))?.description ?? "无"
+            self.javaDescription = try instance.config.javaURL.map({ try JavaSearcher.load(from: $0) })?.description ?? "无"
         } catch {}
     }
     

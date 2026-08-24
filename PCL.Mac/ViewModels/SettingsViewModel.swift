@@ -20,7 +20,7 @@ class SettingsViewModel: ObservableObject {
     
     public func exportLogs() throws -> URL {
         let destination: URL = FileManager.default.homeDirectoryForCurrentUser.appending(path: "Desktop/PCL.Mac-logs-\(dateFormatter.string(from: .now)).zip")
-        try FileManager.default.zipItem(at: URLConstants.logsDirectoryURL, to: destination)
+        try FileManager.default.zipItem(at: URLConstants.logsDirectoryURL, to: destination, shouldKeepParent: false)
         return destination
     }
 }

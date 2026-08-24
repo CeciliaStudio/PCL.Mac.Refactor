@@ -16,7 +16,7 @@ public class InstanceManager: ObservableObject {
     public var currentInstance: MinecraftInstance? { currentRepository.currentInstance }
     
     @Published public var lastLoadError: Error?
-    private var loadTask: Task<Void, Never>?
+    @Published public private(set) var loadTask: Task<Void, Never>?
     
     public init(repositories: [UUID: MinecraftRepository], currentRepositoryId: UUID?) {
         if repositories.isEmpty {
@@ -94,6 +94,7 @@ public class InstanceManager: ObservableObject {
         repository.instances = nil
         repository.errorInstances = nil
         let task = Task.detached {
+            defer { Task { @MainActor in self.loadTask = nil } }
             do {
                 if VersionManifest.shared == nil {
                     try await VersionManifest.load()

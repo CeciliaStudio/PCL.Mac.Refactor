@@ -13,6 +13,7 @@ import Combine
 class InstanceViewModel: ObservableObject {
     @Published public private(set) var repositories: [MinecraftRepository]
     @Published public private(set) var currentRepositoryId: UUID
+    @Published public private(set) var loading: Bool
     public var currentInstance: MinecraftInstance? { instanceManager.currentInstance }
     public var currentRepository: MinecraftRepository { instanceManager.currentRepository }
     
@@ -25,6 +26,7 @@ class InstanceViewModel: ObservableObject {
         
         self.repositories = Array(instanceManager.repositories.values).sorted(by: Self.compareRepository(lhs:rhs:))
         self.currentRepositoryId = instanceManager.currentRepositoryId
+        self.loading = instanceManager.loadTask != nil
         
         instanceManager.$repositories
             .map { Array($0.values).sorted(by: Self.compareRepository(lhs:rhs:)) }
@@ -38,6 +40,12 @@ class InstanceViewModel: ObservableObject {
                 self.observeCurrentRepository()
             }
             .store(in: &cancellables)
+        instanceManager.$loadTask
+            .map { $0 != nil }
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.loading, on: self)
+            .store(in: &cancellables)
+        
         observeCurrentRepository()
     }
     

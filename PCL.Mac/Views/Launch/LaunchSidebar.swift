@@ -73,6 +73,8 @@ struct LaunchSidebar: Sidebar {
                                 hint("请先添加一个账号！", type: .critical)
                             }
                         }
+                    } else if instanceVM.loading {
+                        MyButton("加载中", subLabel: "正在加载实例列表", disabled: true) {}
                     } else {
                         MyButton("下载游戏", subLabel: "未找到可用的游戏实例", type: .normal) {
                             AppRouter.shared.setRoot(.download)

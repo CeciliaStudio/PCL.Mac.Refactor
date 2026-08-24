@@ -46,6 +46,10 @@ struct DemoHomepageView: View {
                         MyButton("红色按钮", subLabel: "但是两行文本", type: .red) {}
                     }
                     .frame(height: 60)
+                    HStack {
+                        MyButton("禁用按钮", subLabel: "灰色且不可点击", disabled: true) {}
+                    }
+                    .frame(height: 60)
                     MyList(items: listItems, selectable: true)
                 }
             }

@@ -38,6 +38,25 @@ struct ResourcesSearchPage: View {
                     }
                 }
             }
+
+            Picker("来源", selection: $viewModel.source) {
+                ForEach(ResourcesSearchViewModel.SearchSource.allCases, id: \.self) { source in
+                    Text(source.rawValue).tag(source)
+                }
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: viewModel.source) { _ in
+                currentPage = 0
+                Task {
+                    do {
+                        try await viewModel.search(viewModel.query)
+                    } catch {
+                        await MainActor.run {
+                            viewModel.loadingVM.fail(with: "搜索\(viewModel.type.localizedName)失败：\(error.localizedDescription)")
+                        }
+                    }
+                }
+            }
             
             if let searchResults = viewModel.searchResults {
                 PaginatedContainer(currentPage: $currentPage, pageCount: viewModel.totalPages) { _ in

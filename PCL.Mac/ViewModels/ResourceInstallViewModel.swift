@@ -33,6 +33,11 @@ class ResourceInstallViewModel: ObservableObject {
             selectedVersionGroup?.0 = .init(loader: nil, version: selected.0.version)
         }
         
+        if project.source == .curseforge {
+            try await loadCurseForge(selectedInstance: selectedInstance, selectedVersionGroup: selectedVersionGroup)
+            return
+        }
+
         let versions: [ModrinthVersion] = try await ModrinthAPIClient.shared.versions(ofProject: project.id, revalidate: true)
         
         var versionMap: [VersionMapKey: [ProjectVersionModel]] = [:]
@@ -95,6 +100,73 @@ class ResourceInstallViewModel: ObservableObject {
             self.loaded = true
         }
     }
+
+    private func loadCurseForge(selectedInstance: MinecraftInstance?, selectedVersionGroup: VersionGroup?) async throws {
+        guard let projectId = project.curseforgeId else { throw SimpleError("无效的 CurseForge 项目 ID") }
+        let client = CurseForgeAPIClient(apiKey: Secrets.shared.curseforgeApiKey)
+        let filterInstance = project.type == .modpack ? nil : selectedInstance
+        let files = try await client.files(
+            ofMod: projectId,
+            gameVersion: filterInstance?.version.id,
+            loader: project.type == .mod ? filterInstance?.modLoader : nil
+        )
+        let dependencyIds = Set(files.flatMap(\.dependencies).filter(\.isRequired).map(\.modId))
+        let dependencies = try await client.mods(ids: Array(dependencyIds)).reduce(into: [Int: ProjectListItemModel]()) {
+            $0[Int($1.id)] = .init($1)
+        }
+        var groups: [VersionMapKey: [ProjectVersionModel]] = [:]
+        for file in files where file.available && !file.gameVersions.isEmpty {
+            let loader: ModLoader? = switch file.modLoaderType {
+            case 1: .forge
+            case 4: .fabric
+            case 6: .neoforge
+            default:
+                if file.gameVersions.contains(where: { $0.caseInsensitiveCompare("Forge") == .orderedSame }) {
+                    .forge
+                } else if file.gameVersions.contains(where: { $0.caseInsensitiveCompare("Fabric") == .orderedSame }) {
+                    .fabric
+                } else if file.gameVersions.contains(where: { $0.caseInsensitiveCompare("NeoForge") == .orderedSame }) {
+                    .neoforge
+                } else {
+                    nil
+                }
+            }
+            let releaseType: ModrinthVersion.VersionType = switch file.releaseType {
+            case 2: .beta
+            case 3: .alpha
+            default: .release
+            }
+            for gameVersion in file.gameVersions where gameVersion.contains(".") {
+                let value = ProjectVersionModel(
+                    id: String(file.id),
+                    name: file.displayName,
+                    version: file.fileName,
+                    downloads: ProjectListItemModel.formatDownloads(file.downloadCount),
+                    datePublished: ProjectListItemModel.formatLastUpdate(file.fileDate),
+                    type: releaseType,
+                    curseforgeFile: file,
+                    requiredDependencies: file.dependencies.filter(\.isRequired).compactMap { dependency in
+                        dependencies[dependency.modId].map {
+                            .init(versionId: nil, projectId: String(dependency.modId), project: $0)
+                        }
+                    },
+                    gameVersion: gameVersion,
+                    loader: loader
+                )
+                groups[.init(loader: loader, version: .init(gameVersion)), default: []].append(value)
+            }
+        }
+        var selected = selectedVersionGroup
+        if let selectedKey = selected?.0 {
+            selected?.1 = groups.removeValue(forKey: selectedKey) ?? []
+        }
+        let versionList = groups.map { ($0.key, $0.value) }.sorted { $0.0 > $1.0 }
+        await MainActor.run {
+            self.versionList = versionList
+            self.selectedVersionGroup = selected?.1.isEmpty == false ? selected : nil
+            self.loaded = true
+        }
+    }
     
     /// 检查实例是否可以安装某个版本。
     /// - Parameters:
@@ -116,22 +188,21 @@ class ResourceInstallViewModel: ObservableObject {
     }
     
     public func createInstallTask(forVersion version: ProjectVersionModel, to instance: MinecraftInstance) async throws -> MyTask<EmptyModel> {
-        guard let primaryFile = version.primaryFile else {
-            throw SimpleError("这个版本中没有主要文件！")
-        }
-        
         let saveDirectoryName = project.type.saveDirectory ?? ""
         let saveDirectoryURL = instance.url.appending(path: saveDirectoryName)
+        let downloadItem: DownloadItem
+        if let primaryFile = version.primaryFile {
+            downloadItem = .init(url: primaryFile.url, destination: saveDirectoryURL.appending(path: primaryFile.name), sha1: primaryFile.sha1)
+        } else if let curseforgeFile = version.curseforgeFile {
+            downloadItem = .init(url: curseforgeFile.downloadURL, destination: saveDirectoryURL.appending(path: curseforgeFile.fileName), checksums: curseforgeFile.checksums)
+        } else {
+            throw SimpleError("这个版本中没有主要文件！")
+        }
         
         return .init(
             name: "资源下载 - \(project.title) \(version.version)",
             .init(0, "下载文件") { task, model in
-                try await FileDownloader.shared.download(
-                    url: primaryFile.url,
-                    destination: saveDirectoryURL.appending(path: primaryFile.name),
-                    sha1: primaryFile.sha1,
-                    progressHandler: task.setProgress(_:)
-                )
+                try await FileDownloader.shared.download(downloadItem, progressHandler: task.setProgress(_:))
             }
         )
     }
@@ -195,7 +266,15 @@ class ResourceInstallViewModel: ObservableObject {
 // MARK: - 整合包相关
 extension ResourceInstallViewModel {
     public func createModpackDownloadTask(_ version: ProjectVersionModel) throws -> (MyTask<EmptyModel>, URL) {
-        guard let primaryFile = version.primaryFile else {
+        let url: URL
+        let checksums: [String: String]?
+        if let primaryFile = version.primaryFile {
+            url = primaryFile.url
+            checksums = primaryFile.sha1.map { ["sha1": $0] }
+        } else if let curseforgeFile = version.curseforgeFile {
+            url = curseforgeFile.downloadURL
+            checksums = curseforgeFile.checksums
+        } else {
             throw SimpleError("这个版本中没有主要文件！")
         }
         
@@ -203,12 +282,8 @@ extension ResourceInstallViewModel {
         let task: MyTask<EmptyModel> = .init(
             name: "下载整合包 - \(project.title) \(version.version)",
             .init(0, "下载文件") { task, _ in
-                try await FileDownloader.shared.download(
-                    url: primaryFile.url,
-                    destination: destination,
-                    sha1: primaryFile.sha1,
-                    progressHandler: task.setProgress(_:)
-                )
+                let item = DownloadItem(url: url, destination: destination, checksums: checksums)
+                try await FileDownloader.shared.download(item, progressHandler: task.setProgress(_:))
             }
         )
         return (task, destination)

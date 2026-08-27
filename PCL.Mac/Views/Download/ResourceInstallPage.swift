@@ -23,8 +23,21 @@ struct ResourceInstallPage: View {
             MyCard(nil) {
                 ProjectListItemView(project: viewModel.project, primary: true)
                 HStack {
-                    MyButton("Modrinth", type: .highlight) {
-                        NSWorkspace.shared.open(URL(string: "https://modrinth.com/project/\(viewModel.project.id)")!)
+                    MyButton(viewModel.project.source == .curseforge ? "CurseForge" : "Modrinth", type: .highlight) {
+                        let url: URL?
+                        switch viewModel.project.source {
+                        case .modrinth:
+                            url = URL(string: "https://modrinth.com/project/\(viewModel.project.id)")
+                        case .curseforge:
+                            let section = switch viewModel.project.type {
+                            case .mod: "mc-mods"
+                            case .modpack: "modpacks"
+                            case .resourcepack: "texture-packs"
+                            case .shader: "shaders"
+                            }
+                            url = viewModel.project.curseforgeSlug.flatMap { URL(string: "https://www.curseforge.com/minecraft/\(section)/\($0)") }
+                        }
+                        if let url { NSWorkspace.shared.open(url) }
                     }
                     .frame(width: 120)
                     Spacer(minLength: 0)
@@ -130,7 +143,13 @@ struct ResourceInstallPage: View {
             return
         }
         
-        let service = ModpackImportService(modpackURL: destination)
+        let service: ModpackImportService
+        if viewModel.project.source == .curseforge {
+            let client = CurseForgeAPIClient(apiKey: Secrets.shared.curseforgeApiKey)
+            service = ModpackImportService(curseforgeClient: client, modpackURL: destination)
+        } else {
+            service = ModpackImportService(modpackURL: destination)
+        }
         
         do {
             let index = try service.load()

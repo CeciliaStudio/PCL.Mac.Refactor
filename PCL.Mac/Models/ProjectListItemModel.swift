@@ -9,7 +9,15 @@ import Foundation
 import Core
 
 struct ProjectListItemModel: Identifiable, Equatable, Hashable {
+    enum Source: Hashable {
+        case modrinth
+        case curseforge
+    }
+
     public let id: String
+    public let source: Source
+    public let curseforgeId: Int?
+    public let curseforgeSlug: String?
     public let title: String
     public let description: String
     public let type: ResourceType
@@ -22,6 +30,9 @@ struct ProjectListItemModel: Identifiable, Equatable, Hashable {
     
     public init(id: String, title: String, description: String, type: ResourceType, iconURL: URL?, tags: [String], supportDescription: String, onlySupportsSnapshot: Bool, downloads: String, lastUpdate: String) {
         self.id = id
+        self.source = .modrinth
+        self.curseforgeId = nil
+        self.curseforgeSlug = nil
         self.title = title
         self.description = description
         self.type = type
@@ -31,6 +42,23 @@ struct ProjectListItemModel: Identifiable, Equatable, Hashable {
         self.onlySupportsSnapshot = onlySupportsSnapshot
         self.downloads = downloads
         self.lastUpdate = lastUpdate
+    }
+
+    init(_ project: CurseForgeMod) {
+        let versions = Set(project.latestFiles.flatMap { $0.gameVersions }.filter { $0.contains(".") })
+        self.id = "curseforge:\(project.id)"
+        self.source = .curseforge
+        self.curseforgeId = Int(project.id)
+        self.curseforgeSlug = project.slug
+        self.title = project.name
+        self.description = project.summary
+        self.type = project.projectType ?? .mod
+        self.iconURL = project.logo?.thumbnailURL
+        self.tags = project.categories.map { $0 }
+        self.supportDescription = versions.sorted().reversed().prefix(3).joined(separator: ", ")
+        self.onlySupportsSnapshot = false
+        self.downloads = Self.formatDownloads(project.downloadCount)
+        self.lastUpdate = Self.formatLastUpdate(project.dateModified)
     }
     
     public init(_ project: ModrinthProject) {

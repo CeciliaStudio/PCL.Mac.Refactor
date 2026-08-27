@@ -30,9 +30,6 @@ struct Secrets {
         if let secret = ProcessInfo.processInfo.environment["PCLMAC_\(key)"] ?? secrets?[key] {
             return secret
         }
-        if secrets != nil {
-            warn("缺少 Secret 项 \(key)")
-        }
         return nil
     }
 }

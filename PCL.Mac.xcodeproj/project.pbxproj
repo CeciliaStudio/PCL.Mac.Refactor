@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		EC114A4A2ED05F070027201F /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = EC114A492ED05F070027201F /* SwiftyJSON */; };
-		EC17F3932F52B09D0010B075 /* SwiftScaffolding in Frameworks */ = {isa = PBXBuildFile; productRef = EC17F3922F52B09D0010B075 /* SwiftScaffolding */; };
-		EC971F4B2F2CB23E006CFFF0 /* SwiftScaffolding in Frameworks */ = {isa = PBXBuildFile; productRef = EC971F4A2F2CB23E006CFFF0 /* SwiftScaffolding */; };
 		EC996B442EBEE80F0094E524 /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EC996B3C2EBEE80F0094E524 /* Core.framework */; };
 		EC996B462EBEE80F0094E524 /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EC996B3C2EBEE80F0094E524 /* Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ECA694222F52FB6E00F3DEDC /* SwiftScaffolding in Frameworks */ = {isa = PBXBuildFile; productRef = ECA694212F52FB6E00F3DEDC /* SwiftScaffolding */; };
@@ -152,8 +150,6 @@
 			files = (
 				ECA694222F52FB6E00F3DEDC /* SwiftScaffolding in Frameworks */,
 				ECF707982ED8291F001F0C71 /* SwiftyJSON in Frameworks */,
-				EC17F3932F52B09D0010B075 /* SwiftScaffolding in Frameworks */,
-				EC971F4B2F2CB23E006CFFF0 /* SwiftScaffolding in Frameworks */,
 				EC996B442EBEE80F0094E524 /* Core.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -279,8 +275,6 @@
 			name = PCL.Mac;
 			packageProductDependencies = (
 				EC114A472ED05F020027201F /* SwiftyJSON */,
-				EC971F4A2F2CB23E006CFFF0 /* SwiftScaffolding */,
-				EC17F3922F52B09D0010B075 /* SwiftScaffolding */,
 				ECA694212F52FB6E00F3DEDC /* SwiftScaffolding */,
 			);
 			productName = PCL.Mac;
@@ -792,14 +786,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = EC114A452ED05EF50027201F /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
 			productName = SwiftyJSON;
-		};
-		EC17F3922F52B09D0010B075 /* SwiftScaffolding */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftScaffolding;
-		};
-		EC971F4A2F2CB23E006CFFF0 /* SwiftScaffolding */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SwiftScaffolding;
 		};
 		ECA694212F52FB6E00F3DEDC /* SwiftScaffolding */ = {
 			isa = XCSwiftPackageProductDependency;

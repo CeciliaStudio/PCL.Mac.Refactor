@@ -51,7 +51,7 @@ public struct OfficialDownloadSource: DownloadSource {
 
     public func candidate(for url: URL) -> DownloadCandidate? {
         var headers: [String: String]? = nil
-        if url.matches(hosts: "edge.forgecdn.net"), let key = curseforgeApiKey {
+        if url.matches(hosts: "edge.forgecdn.net", "media.forgecdn.net", "mediafilez.forgecdn.net"), let key = curseforgeApiKey {
             headers = ["x-api-key": key]
         }
         return DownloadCandidate(url: url, headers: headers)
@@ -107,7 +107,7 @@ public struct MirrorDownloadSource: DownloadSource {
             return bmclapiBaseURL.appending(path: "fabric-meta").appending(path: url.path)
         }
 
-        if url.matches(hosts: "cdn.modrinth.com", "edge.forgecdn.net") {
+        if url.matches(hosts: "cdn.modrinth.com", "edge.forgecdn.net", "media.forgecdn.net", "mediafilez.forgecdn.net") {
             return mcimBaseURL.appending(path: url.path)
         }
 

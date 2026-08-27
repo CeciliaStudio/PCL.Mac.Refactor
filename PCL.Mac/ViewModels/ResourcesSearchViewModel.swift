@@ -9,15 +9,21 @@ import Foundation
 import Core
 
 class ResourcesSearchViewModel: ObservableObject {
+    enum SearchSource: String, CaseIterable {
+        case modrinth = "Modrinth"
+        case curseforge = "CurseForge"
+    }
+
     @Published public var searchResults: [ProjectListItemModel]?
     @Published public var query: String = ""
+    @Published public var source: SearchSource = .modrinth
     public let type: ResourceType
     public let loadingVM: MyLoadingViewModel = .init(text: "加载中")
-    private var lastSearchResponse: ModrinthAPIClient.SearchResponse?
+    private var totalResultCount: Int = 0
+    private let pageSize: Int = 40
     
     public var totalPages: Int {
-        guard let lastSearchResponse else { return 0 }
-        return Int(ceil(Double(lastSearchResponse.totalHits) / Double(lastSearchResponse.limit)))
+        Int(ceil(Double(totalResultCount) / Double(pageSize)))
     }
     
     public init(type: ResourceType) {
@@ -30,10 +36,20 @@ class ResourcesSearchViewModel: ObservableObject {
             loadingVM.reset()
             searchResults = nil
         }
-        let response: ModrinthAPIClient.SearchResponse = try await ModrinthAPIClient.shared.search(type: type, query, forVersion: nil, pageIndex: pageIndex)
-        await MainActor.run {
-            lastSearchResponse = response
-            searchResults = response.hits.filter { $0.clientCompatibility != .unsupported }.map(ProjectListItemModel.init(_:))
+        switch source {
+        case .modrinth:
+            let response = try await ModrinthAPIClient.shared.search(type: type, query, forVersion: nil, pageIndex: pageIndex, limit: pageSize)
+            await MainActor.run {
+                totalResultCount = response.totalHits
+                searchResults = response.hits.filter { $0.clientCompatibility != .unsupported }.map(ProjectListItemModel.init(_:))
+            }
+        case .curseforge:
+            let response = try await CurseForgeAPIClient(apiKey: Secrets.shared.curseforgeApiKey)
+                .search(type: type, query: query, pageIndex: pageIndex, pageSize: pageSize)
+            await MainActor.run {
+                totalResultCount = response.totalHits
+                searchResults = response.hits.map(ProjectListItemModel.init(_:))
+            }
         }
     }
     
